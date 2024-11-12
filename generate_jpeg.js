@@ -135,9 +135,9 @@ function main(argc, argv)
 
   const output_jpeg = argv[2];
 
-  const width = 64;
-  const height = 64;
-  const nb_components = 1;
+  const width = 16;
+  const height = 16;
+  const nb_components = 3;
 
   const jpeg_data = generateJPEG(width, height, nb_components, ascii_data);
 
