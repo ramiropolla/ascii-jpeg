@@ -27,12 +27,8 @@ def generate_jpeg(filename, ascii_file, comment="ASCII JPEG"):
         dc_lengths = bytes([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0])
 
         # AC is ascii value
-        if False:
-            ac_symbols = bytes([6, 5, 4, 3, 2, 1])
-            ac_lengths = bytes([0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-        else:
-            ac_symbols = bytes([7])
-            ac_lengths = bytes([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        ac_symbols = bytes([7])
+        ac_lengths = bytes([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         # Write DC tables (table IDs 0 and 1 for Y and CbCr components)
         write_marker(f, 0xFFC4, struct.pack("B", 0x00) + dc_lengths + dc_symbols)  # DC table for Y
