@@ -153,4 +153,5 @@ try {
   console.log(e);
   if ( e.stack )
     console.log(e.stack);
+  std.exit(1);
 }
