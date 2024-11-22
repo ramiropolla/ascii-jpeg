@@ -110,8 +110,11 @@ function generateJPEG(width, height, nb_components, ascii_data)
   // Write ASCII data as SOS content
   jpeg_file.append_data(ascii_data);
 
-  // End of Image (EOI) marker
-  jpeg_file.append_marker(0xFFD9);
+  if ( false )
+  {
+    // End of Image (EOI) marker
+    jpeg_file.append_marker(0xFFD9);
+  }
 
   // Concatenate all segments into a single Uint8Array
   return jpeg_file.generate();
