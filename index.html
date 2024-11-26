@@ -169,6 +169,7 @@
     margin-bottom: 10px;
     color: #bb86fc;
     text-align: center;
+    display: inline-block;
   }
 
   .image-row img {
@@ -213,16 +214,23 @@
 <div class="container">
   <!-- Left column -->
   <div class="left-column">
-    <!-- Dimension dropdown moved here -->
-    <select id="image-size">
-      <option value="8">8x8</option>
-      <option value="16">16x16</option>
-      <option value="32">32x32</option>
-      <option value="64" selected>64x64</option>
-      <option value="128">128x128</option>
-      <option value="256">256x256</option>
-      <option value="512">512x512</option>
-    </select>
+    <!-- Image Size labels -->
+    <div id="image-sizes">
+      <input type="radio" id="size8" name="image_size">
+      <label class="option-label" for="size8">8x8</label>
+
+      <input type="radio" id="size16" name="image_size">
+      <label class="option-label" for="size16">16x16</label>
+
+      <input type="radio" id="size32" name="image_size">
+      <label class="option-label" for="size32">32x32</label>
+
+      <input type="radio" id="size64" name="image_size" checked>
+      <label class="option-label" for="size64">64x64</label>
+
+      <input type="radio" id="size128" name="image_size">
+      <label class="option-label" for="size128">128x128</label>
+    </div>
 
     <!-- Radio buttons and labels -->
     <input type="radio" id="grayscale" name="color_mode">
@@ -451,6 +459,7 @@
   // JavaScript to enable/disable components and handle updates
   document.addEventListener('DOMContentLoaded', function() {
     const colorModes = document.querySelectorAll('input[name="color_mode"]');
+    const imageSizeRadios = document.querySelectorAll('input[name="image_size"]');
     const components = {
       1: document.getElementById('component1'),
       2: document.getElementById('component2'),
@@ -458,7 +467,6 @@
     };
     const statusLine = document.getElementById('status');
     const textarea = document.getElementById('textbox');
-    const imageSizeSelect = document.getElementById('image-size');
     const jpegImage = document.getElementById('jpeg');
     const pngImage = document.getElementById('png');
 
@@ -498,6 +506,11 @@
       radio.addEventListener('change', updateComponents);
     });
 
+    // Attach event listeners to image size radio buttons
+    imageSizeRadios.forEach(radio => {
+      radio.addEventListener('change', update);
+    });
+
     // Attach event listeners to Quantization selects
     document.querySelectorAll('select[name^="quant_dc_"], select[name^="quant_ac_"]').forEach(select => {
       select.addEventListener('change', update);
@@ -515,8 +528,14 @@
       updateTimeout = setTimeout(update, 200);
     });
 
-    // Attach event listener to image size dropdown
-    imageSizeSelect.addEventListener('change', update);
+    function getImageSize() {
+      const selectedSizeRadio = document.querySelector('input[name="image_size"]:checked');
+      if (selectedSizeRadio) {
+        const sizeValue = selectedSizeRadio.id.replace('size', '');
+        return parseInt(sizeValue);
+      }
+      return 64; // default size
+    }
 
     // The update function
     function update() {
@@ -527,7 +546,7 @@
       const colorspace = document.querySelector('input[name="color_mode"]:checked + label').textContent;
 
       // Get image size
-      const imageSize = parseInt(imageSizeSelect.value);
+      const imageSize = getImageSize();
 
       // Initialize components array
       const componentsArray = [];
