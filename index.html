@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ASCII JPEG</title>
+<style>
+  /* Dark mode styles */
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: monospace;
+  }
+
+  /* Hide the radio buttons */
+  input[type="radio"] {
+    display: none;
+  }
+
+  /* Container for columns */
+  .container {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  /* Left column */
+  .left-column {
+    flex: 1;
+  }
+
+  /* Middle column */
+  .middle-column {
+    flex: 1;
+    margin-left: 20px;
+    margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header row inside middle column */
+  .middle-column .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Right column */
+  .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Style the labels to look like buttons */
+  label.option-label {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    border: 2px solid #bb86fc;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+    color: #e0e0e0;
+  }
+
+  /* Change background on hover */
+  label.option-label:hover {
+    background-color: #1f1f1f;
+  }
+
+  /* Style the selected label */
+  input[type="radio"]:checked + label.option-label {
+    background-color: #bb86fc;
+    color: #000000;
+  }
+
+  /* Component styles */
+  .component {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    background-color: #1e1e1e;
+  }
+
+  .component.disabled {
+    opacity: 0.5;
+  }
+
+  .component-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #bb86fc;
+  }
+
+  /* Table styles for components */
+  .component table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .component th, .component td {
+    padding: 5px;
+    text-align: center;
+  }
+
+  .component th {
+    font-weight: bold;
+    color: #bb86fc;
+  }
+
+  .component input[type="text"] {
+    width: 50px;
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 2px;
+    text-align: center;
+  }
+
+  .component select {
+    width: 60px;
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 2px;
+  }
+
+  /* Textarea in the middle column */
+  .middle-column textarea {
+    flex: 1;
+    resize: none;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    padding: 10px;
+  }
+
+  /* Heading above the textarea */
+  .middle-column h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #bb86fc;
+    text-align: center;
+  }
+
+  /* Status line */
+  #status {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #cf6679;
+  }
+
+  /* Ensure columns stretch equally */
+  .left-column, .middle-column, .right-column {
+    align-self: stretch;
+  }
+
+  /* Right column styling */
+  .right-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .image-row {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    padding: 10px;
+  }
+
+  .image-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .image-row h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #bb86fc;
+    text-align: center;
+  }
+
+  .image-row img {
+    flex: 1;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background-color: #2e2e2e;
+  }
+
+  /* Set specific size for the Instagrammable image */
+  #png {
+    width: 512px;
+    height: 512px;
+    margin: 0 auto;
+  }
+
+  .image-row .button-container {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .image-row button {
+    padding: 10px 20px;
+    background-color: #bb86fc;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .image-row button:hover {
+    background-color: #a675e1;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Left column -->
+  <div class="left-column">
+    <!-- Radio buttons and labels -->
+    <input type="radio" id="grayscale" name="color_mode">
+    <label class="option-label" for="grayscale">Grayscale</label>
+
+    <input type="radio" id="yuv444" name="color_mode" checked>
+    <label class="option-label" for="yuv444">YUV444</label>
+
+    <input type="radio" id="yuv422" name="color_mode">
+    <label class="option-label" for="yuv422">YUV422</label>
+
+    <input type="radio" id="yuv420" name="color_mode">
+    <label class="option-label" for="yuv420">YUV420</label>
+
+    <!-- Components -->
+    <div id="components">
+      <!-- Component 1 -->
+      <div class="component" id="component1">
+        <div class="component-title">Component #1</div>
+        <table>
+          <tr>
+            <th></th>
+            <th>DC</th>
+            <th>AC</th>
+          </tr>
+          <tr>
+            <td>Quantization:</td>
+            <td><input type="text" name="quant_dc_1" value="8"></td>
+            <td><input type="text" name="quant_ac_1" value="8"></td>
+          </tr>
+          <tr>
+            <td>Huffman:</td>
+            <td>
+              <select name="huff_dc_1">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+            <td>
+              <select name="huff_ac_1">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Component 2 -->
+      <div class="component" id="component2">
+        <div class="component-title">Component #2</div>
+        <table>
+          <tr>
+            <th></th>
+            <th>DC</th>
+            <th>AC</th>
+          </tr>
+          <tr>
+            <td>Quantization:</td>
+            <td><input type="text" name="quant_dc_2" value="8"></td>
+            <td><input type="text" name="quant_ac_2" value="8"></td>
+          </tr>
+          <tr>
+            <td>Huffman:</td>
+            <td>
+              <select name="huff_dc_2">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+            <td>
+              <select name="huff_ac_2">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Component 3 -->
+      <div class="component" id="component3">
+        <div class="component-title">Component #3</div>
+        <table>
+          <tr>
+            <th></th>
+            <th>DC</th>
+            <th>AC</th>
+          </tr>
+          <tr>
+            <td>Quantization:</td>
+            <td><input type="text" name="quant_dc_3" value="8"></td>
+            <td><input type="text" name="quant_ac_3" value="8"></td>
+          </tr>
+          <tr>
+            <td>Huffman:</td>
+            <td>
+              <select name="huff_dc_3">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+            <td>
+              <select name="huff_ac_3">
+                <option value="0">0</option>
+                <option value="1" selected>1</option>
+                <!-- Add other values as needed -->
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle column -->
+  <div class="middle-column">
+    <div class="header-row">
+      <h3>ASCII JPEG</h3>
+      <select id="image-size">
+        <option value="8">8x8</option>
+        <option value="16">16x16</option>
+        <option value="32">32x32</option>
+        <option value="64" selected>64x64</option>
+        <option value="128">128x128</option>
+        <option value="256">256x256</option>
+        <option value="512">512x512</option>
+      </select>
+    </div>
+    <textarea id="textbox"></textarea>
+  </div>
+
+  <!-- Right column -->
+  <div class="right-column">
+    <!-- First row -->
+    <div class="image-row">
+      <h3>JPEG</h3>
+      <img id="jpeg" src="" alt="JPEG Image">
+      <div class="button-container">
+        <button id="download-jpeg">Download JPEG</button>
+      </div>
+    </div>
+
+    <!-- Second row -->
+    <div class="image-row">
+      <h3>Instagrammable image</h3>
+      <img id="png" src="" alt="Instagrammable Image">
+      <div class="button-container">
+        <button id="download-png">Download Instagrammable image</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Line -->
+<div id="status"></div>
+
+<!-- Include ascii_jpeg.js -->
+<script src="ascii_jpeg.js"></script>
+
+<script>
+  // JavaScript to enable/disable components and handle updates
+  document.addEventListener('DOMContentLoaded', function() {
+    const colorModes = document.querySelectorAll('input[name="color_mode"]');
+    const components = {
+      1: document.getElementById('component1'),
+      2: document.getElementById('component2'),
+      3: document.getElementById('component3')
+    };
+    const statusLine = document.getElementById('status');
+    const textarea = document.getElementById('textbox');
+    const imageSizeSelect = document.getElementById('image-size');
+    const jpegImage = document.getElementById('jpeg');
+    const pngImage = document.getElementById('png');
+    let updateTimeout;
+    let quantizationTimeouts = {};
+
+    // Set default ASCII content after ascii_jpeg.js is loaded
+    textarea.value = default_ascii;
+
+    function updateComponents() {
+      const selectedMode = document.querySelector('input[name="color_mode"]:checked').id;
+      if (selectedMode === 'grayscale') {
+        enableComponent(1);
+        disableComponent(2);
+        disableComponent(3);
+      } else {
+        enableComponent(1);
+        enableComponent(2);
+        enableComponent(3);
+      }
+      update(); // Call update() after components have been updated
+    }
+
+    function enableComponent(num) {
+      components[num].classList.remove('disabled');
+      components[num].querySelectorAll('input, select').forEach(el => {
+        el.disabled = false;
+      });
+    }
+
+    function disableComponent(num) {
+      components[num].classList.add('disabled');
+      components[num].querySelectorAll('input, select').forEach(el => {
+        el.disabled = true;
+      });
+    }
+
+    // Attach event listeners to color mode radio buttons
+    colorModes.forEach(radio => {
+      radio.addEventListener('change', updateComponents);
+    });
+
+    // Attach event listeners to Quantization inputs with debounce
+    document.querySelectorAll('input[type="text"]').forEach(input => {
+      input.addEventListener('input', function() {
+        const name = input.name;
+        clearTimeout(quantizationTimeouts[name]);
+        quantizationTimeouts[name] = setTimeout(update, 200);
+      });
+    });
+
+    // Attach event listeners to Huffman selects
+    document.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', update);
+    });
+
+    // Attach event listener to textarea with debounce
+    textarea.addEventListener('input', function() {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(update, 200);
+    });
+
+    // Attach event listener to image size dropdown
+    imageSizeSelect.addEventListener('change', update);
+
+    // The update function
+    function update() {
+      // Clear status line
+      statusLine.textContent = '';
+
+      // Get colorspace
+      const colorspace = document.querySelector('input[name="color_mode"]:checked + label').textContent;
+
+      // Get image size
+      const imageSize = parseInt(imageSizeSelect.value);
+
+      // Initialize components array
+      const componentsArray = [];
+
+      // Regular expression for decimal or hexadecimal numbers
+      const numRegex = /^(\d+|0x[0-9a-fA-F]+)$/;
+
+      // Get values from enabled components
+      const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
+      for (const component of enabledComponents) {
+        const quant_dc_input = component.querySelector('input[name^="quant_dc_"]');
+        const quant_ac_input = component.querySelector('input[name^="quant_ac_"]');
+        const huff_dc_select = component.querySelector('select[name^="huff_dc_"]');
+        const huff_ac_select = component.querySelector('select[name^="huff_ac_"]');
+
+        const quant_dc_str = quant_dc_input.value.trim();
+        const quant_ac_str = quant_ac_input.value.trim();
+
+        // Validate Quantization values format
+        if (!numRegex.test(quant_dc_str) || !numRegex.test(quant_ac_str)) {
+          statusLine.textContent = 'Error: Quantization values should be decimal or hexadecimal numbers.';
+          return;
+        }
+
+        // Convert Quantization values to numbers
+        const quant_dc = parseInt(quant_dc_str);
+        const quant_ac = parseInt(quant_ac_str);
+
+        // Validate Quantization values range
+        if (quant_dc < 1 || quant_dc > 255 || quant_ac < 1 || quant_ac > 255) {
+          statusLine.textContent = 'Error: Quantization values must be between 1 and 255.';
+          return;
+        }
+
+        const huff_dc = parseInt(huff_dc_select.value);
+        const huff_ac = parseInt(huff_ac_select.value);
+
+        // Add component values as a subarray
+        componentsArray.push([quant_dc, quant_ac, huff_dc, huff_ac]);
+      }
+
+      // Get ASCII content from textarea
+      const ascii = textarea.value;
+
+      // Check that the textbox content only has printable ASCII characters and newline
+      const asciiRegex = /^[\x20-\x7E\n]*$/;
+      if (!asciiRegex.test(ascii)) {
+        statusLine.textContent = 'Error: Textbox content must contain only printable ASCII characters.';
+        return;
+      }
+
+      // Call ascii_jpeg() with the parameters
+      ascii_jpeg(colorspace, componentsArray, ascii, imageSize, imageSize);
+
+      // Update the image dimensions
+      jpegImage.width = imageSize;
+      jpegImage.height = imageSize;
+    }
+
+    // Handle Download JPEG button
+    const downloadJpegButton = document.getElementById('download-jpeg');
+
+    downloadJpegButton.addEventListener('click', function() {
+      if (window.jpeg_blob) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(window.jpeg_blob);
+        link.download = 'ascii.jpg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        statusLine.textContent = 'Error: No JPEG data available to download.';
+      }
+    });
+
+    // Initial update
+    updateComponents();
+  });
+</script>
+
+</body>
+</html>
