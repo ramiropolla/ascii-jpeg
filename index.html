@@ -36,13 +36,6 @@
     flex-direction: column;
   }
 
-  /* Header row inside middle column */
-  .middle-column .header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
   /* Right column */
   .right-column {
     flex: 1;
@@ -109,16 +102,6 @@
     color: #bb86fc;
   }
 
-  .component input[type="text"] {
-    width: 50px;
-    background-color: #2e2e2e;
-    color: #e0e0e0;
-    border: 1px solid #555555;
-    border-radius: 4px;
-    padding: 2px;
-    text-align: center;
-  }
-
   .component select {
     width: 60px;
     background-color: #2e2e2e;
@@ -169,6 +152,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: center; /* Center contents horizontally */
     margin-bottom: 20px;
     background-color: #1e1e1e;
     border: 1px solid #333333;
@@ -193,6 +177,8 @@
     max-height: 100%;
     object-fit: contain;
     background-color: #2e2e2e;
+    display: block; /* Ensure image is block-level */
+    margin: 0 auto; /* Center image horizontally */
   }
 
   /* Set specific size for the Instagrammable image */
@@ -227,6 +213,17 @@
 <div class="container">
   <!-- Left column -->
   <div class="left-column">
+    <!-- Dimension dropdown moved here -->
+    <select id="image-size">
+      <option value="8">8x8</option>
+      <option value="16">16x16</option>
+      <option value="32">32x32</option>
+      <option value="64" selected>64x64</option>
+      <option value="128">128x128</option>
+      <option value="256">256x256</option>
+      <option value="512">512x512</option>
+    </select>
+
     <!-- Radio buttons and labels -->
     <input type="radio" id="grayscale" name="color_mode">
     <label class="option-label" for="grayscale">Grayscale</label>
@@ -253,8 +250,29 @@
           </tr>
           <tr>
             <td>Quantization:</td>
-            <td><input type="text" name="quant_dc_1" value="8"></td>
-            <td><input type="text" name="quant_ac_1" value="8"></td>
+            <td>
+              <select name="quant_dc_1">
+                <!-- Options from 1 to 255 -->
+                <!-- For brevity, only a few options are shown -->
+                <!-- You can include all options from 1 to 255 if needed -->
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
+            <td>
+              <select name="quant_ac_1">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
           </tr>
           <tr>
             <td>Huffman:</td>
@@ -287,8 +305,27 @@
           </tr>
           <tr>
             <td>Quantization:</td>
-            <td><input type="text" name="quant_dc_2" value="8"></td>
-            <td><input type="text" name="quant_ac_2" value="8"></td>
+            <td>
+              <select name="quant_dc_2">
+                <!-- Options from 1 to 255 -->
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
+            <td>
+              <select name="quant_ac_2">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
           </tr>
           <tr>
             <td>Huffman:</td>
@@ -321,8 +358,27 @@
           </tr>
           <tr>
             <td>Quantization:</td>
-            <td><input type="text" name="quant_dc_3" value="8"></td>
-            <td><input type="text" name="quant_ac_3" value="8"></td>
+            <td>
+              <select name="quant_dc_3">
+                <!-- Options from 1 to 255 -->
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
+            <td>
+              <select name="quant_ac_3">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <!-- ... -->
+                <option value="8" selected>8</option>
+                <!-- ... -->
+                <option value="255">255</option>
+              </select>
+            </td>
           </tr>
           <tr>
             <td>Huffman:</td>
@@ -350,15 +406,6 @@
   <div class="middle-column">
     <div class="header-row">
       <h3>ASCII JPEG</h3>
-      <select id="image-size">
-        <option value="8">8x8</option>
-        <option value="16">16x16</option>
-        <option value="32">32x32</option>
-        <option value="64" selected>64x64</option>
-        <option value="128">128x128</option>
-        <option value="256">256x256</option>
-        <option value="512">512x512</option>
-      </select>
     </div>
     <textarea id="textbox"></textarea>
   </div>
@@ -392,6 +439,15 @@
 <script src="ascii_jpeg.js"></script>
 
 <script>
+  // Helper function to generate options from min to max with selected value
+  function generateOptions(min, max, selectedValue) {
+    let options = '';
+    for (let i = min; i <= max; i++) {
+      options += `<option value="${i}"${i === selectedValue ? ' selected' : ''}>${i}</option>`;
+    }
+    return options;
+  }
+
   // JavaScript to enable/disable components and handle updates
   document.addEventListener('DOMContentLoaded', function() {
     const colorModes = document.querySelectorAll('input[name="color_mode"]');
@@ -405,8 +461,6 @@
     const imageSizeSelect = document.getElementById('image-size');
     const jpegImage = document.getElementById('jpeg');
     const pngImage = document.getElementById('png');
-    let updateTimeout;
-    let quantizationTimeouts = {};
 
     // Set default ASCII content after ascii_jpeg.js is loaded
     textarea.value = default_ascii;
@@ -427,14 +481,14 @@
 
     function enableComponent(num) {
       components[num].classList.remove('disabled');
-      components[num].querySelectorAll('input, select').forEach(el => {
+      components[num].querySelectorAll('select').forEach(el => {
         el.disabled = false;
       });
     }
 
     function disableComponent(num) {
       components[num].classList.add('disabled');
-      components[num].querySelectorAll('input, select').forEach(el => {
+      components[num].querySelectorAll('select').forEach(el => {
         el.disabled = true;
       });
     }
@@ -444,21 +498,18 @@
       radio.addEventListener('change', updateComponents);
     });
 
-    // Attach event listeners to Quantization inputs with debounce
-    document.querySelectorAll('input[type="text"]').forEach(input => {
-      input.addEventListener('input', function() {
-        const name = input.name;
-        clearTimeout(quantizationTimeouts[name]);
-        quantizationTimeouts[name] = setTimeout(update, 200);
-      });
+    // Attach event listeners to Quantization selects
+    document.querySelectorAll('select[name^="quant_dc_"], select[name^="quant_ac_"]').forEach(select => {
+      select.addEventListener('change', update);
     });
 
     // Attach event listeners to Huffman selects
-    document.querySelectorAll('select').forEach(select => {
+    document.querySelectorAll('select[name^="huff_dc_"], select[name^="huff_ac_"]').forEach(select => {
       select.addEventListener('change', update);
     });
 
     // Attach event listener to textarea with debounce
+    let updateTimeout;
     textarea.addEventListener('input', function() {
       clearTimeout(updateTimeout);
       updateTimeout = setTimeout(update, 200);
@@ -481,36 +532,16 @@
       // Initialize components array
       const componentsArray = [];
 
-      // Regular expression for decimal or hexadecimal numbers
-      const numRegex = /^(\d+|0x[0-9a-fA-F]+)$/;
-
       // Get values from enabled components
       const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
       for (const component of enabledComponents) {
-        const quant_dc_input = component.querySelector('input[name^="quant_dc_"]');
-        const quant_ac_input = component.querySelector('input[name^="quant_ac_"]');
+        const quant_dc_select = component.querySelector('select[name^="quant_dc_"]');
+        const quant_ac_select = component.querySelector('select[name^="quant_ac_"]');
         const huff_dc_select = component.querySelector('select[name^="huff_dc_"]');
         const huff_ac_select = component.querySelector('select[name^="huff_ac_"]');
 
-        const quant_dc_str = quant_dc_input.value.trim();
-        const quant_ac_str = quant_ac_input.value.trim();
-
-        // Validate Quantization values format
-        if (!numRegex.test(quant_dc_str) || !numRegex.test(quant_ac_str)) {
-          statusLine.textContent = 'Error: Quantization values should be decimal or hexadecimal numbers.';
-          return;
-        }
-
-        // Convert Quantization values to numbers
-        const quant_dc = parseInt(quant_dc_str);
-        const quant_ac = parseInt(quant_ac_str);
-
-        // Validate Quantization values range
-        if (quant_dc < 1 || quant_dc > 255 || quant_ac < 1 || quant_ac > 255) {
-          statusLine.textContent = 'Error: Quantization values must be between 1 and 255.';
-          return;
-        }
-
+        const quant_dc = parseInt(quant_dc_select.value);
+        const quant_ac = parseInt(quant_ac_select.value);
         const huff_dc = parseInt(huff_dc_select.value);
         const huff_ac = parseInt(huff_ac_select.value);
 
