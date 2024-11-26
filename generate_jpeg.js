@@ -59,10 +59,15 @@ function generateJPEG(width, height, nb_components, ascii_data)
   // DQT (Define Quantization Table)
   const dqt_data = new Uint8Array(65);
   dqt_data[0] = 0x00; // Precision and table ID
+  // precision (0,1)
+  // index (0,1,2,3)
   dqt_data.fill(0x80, 1); // Quantization table values
   jpeg_file.append_marker(0xFFDB, dqt_data);
 
   // DHT (Define Huffman Table) for DC and AC tables
+
+  // class (dc: 0, ac: 1)
+  // index (0,1,2,3)
 
   // DC table: always zero
   const dc_type = 3;
@@ -98,12 +103,6 @@ function generateJPEG(width, height, nb_components, ascii_data)
   let ac_symbols;
   switch ( ac_type )
   {
-  case 20:
-    // 0xxxxxxx
-    // 1xxxxxxx
-    ac_lengths = new Uint8Array([2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-    ac_symbols = new Uint8Array([7, 7]);
-    break;
   case 0:
     // every byte is EOB.
     ac_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -277,7 +276,7 @@ function generateJPEG(width, height, nb_components, ascii_data)
   {
     sof_data[6 + (i * 3)] = 1 + i;          // Component identifier
     sof_data[7 + (i * 3)] = (i == 0) ? 0x11 : 0x22;           // Subsampling factors
-    sof_data[8 + (i * 3)] = 0;              // Quantization table index
+    sof_data[8 + (i * 3)] = 0;              // Quantization table index (0,1,2,3)
   }
   jpeg_file.append_marker(0xFFC0, sof_data);
 
@@ -288,7 +287,7 @@ function generateJPEG(width, height, nb_components, ascii_data)
   for ( let i = 0; i < nb_components; i++ )
   {
     sos_data[1 + (i * 2)] = 1 + i;          // Component identifier
-    sos_data[2 + (i * 2)] = 0x00;
+    sos_data[2 + (i * 2)] = 0x00;           // huffman indices (dc, ac)
   }
   sos_data[1 + (nb_components * 2) + 0] = 0x00;
   sos_data[1 + (nb_components * 2) + 1] = 0x3F;
