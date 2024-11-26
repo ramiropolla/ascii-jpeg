@@ -583,6 +583,22 @@
       }
     });
 
+    // Handle Download Instagrammable image button
+    const downloadPngButton = document.getElementById('download-png');
+
+    downloadPngButton.addEventListener('click', function() {
+      if (window.png_blob) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(window.png_blob);
+        link.download = 'ascii_instagram.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        statusLine.textContent = 'Error: No PNG data available to download.';
+      }
+    });
+
     // Initial update
     updateComponents();
   });

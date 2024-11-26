@@ -205,7 +205,7 @@ function ascii_jpeg(colorspace, components, ascii, width, height) {
       const pngImage = document.getElementById('png');
       pngImage.src = pngUrl;
 
-      // Optionally, store the PNG blob for download
+      // Store the PNG blob for download
       canvas.toBlob(function(pngBlob) {
         window.png_blob = pngBlob;
       }, 'image/png');
