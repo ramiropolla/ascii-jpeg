@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -177,9 +177,16 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    background-color: #2e2e2e;
     display: block; /* Ensure image is block-level */
     margin: 0 auto; /* Center image horizontally */
+  }
+
+  /* Set specific size for the Real ASCII JPEG */
+  #jpeg-div {
+    width: 128px;
+    height: 128px;
+    display: flex;
+    align-items: center;
   }
 
   /* Set specific size for the Instagrammable image */
@@ -219,13 +226,13 @@
       <input type="radio" id="size8" name="image_size">
       <label class="option-label" for="size8">8x8</label>
 
-      <input type="radio" id="size16" name="image_size">
+      <input type="radio" id="size16" name="image_size" checked>
       <label class="option-label" for="size16">16x16</label>
 
       <input type="radio" id="size32" name="image_size">
       <label class="option-label" for="size32">32x32</label>
 
-      <input type="radio" id="size64" name="image_size" checked>
+      <input type="radio" id="size64" name="image_size">
       <label class="option-label" for="size64">64x64</label>
 
       <input type="radio" id="size128" name="image_size">
@@ -259,43 +266,66 @@
           <tr>
             <td>Quantization:</td>
             <td>
+<!--
               <select name="quant_dc_1">
-                <!-- Options from 1 to 255 -->
-                <!-- For brevity, only a few options are shown -->
-                <!-- You can include all options from 1 to 255 if needed -->
-                <option value="1">1</option>
+                <option value="1" selected>1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4">4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_dc_1" type="range" value="1" min="1" max="255">
             </td>
             <td>
+<!--
               <select name="quant_ac_1">
                 <option value="1">1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4" selected>4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_ac_1" type="range" value="4" min="1" max="255">
             </td>
           </tr>
           <tr>
             <td>Huffman:</td>
             <td>
               <select name="huff_dc_1">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0" selected>skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8">full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
             <td>
               <select name="huff_ac_1">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0">skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8" selected>full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
           </tr>
@@ -314,41 +344,66 @@
           <tr>
             <td>Quantization:</td>
             <td>
+<!--
               <select name="quant_dc_2">
-                <!-- Options from 1 to 255 -->
-                <option value="1">1</option>
+                <option value="1" selected>1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4">4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_dc_2" type="range" value="1" min="1" max="255">
             </td>
             <td>
+<!--
               <select name="quant_ac_2">
                 <option value="1">1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4" selected>4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_ac_2" type="range" value="4" min="1" max="255">
             </td>
           </tr>
           <tr>
             <td>Huffman:</td>
             <td>
               <select name="huff_dc_2">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0" selected>skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8">full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
             <td>
               <select name="huff_ac_2">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0">skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8" selected>full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
           </tr>
@@ -367,41 +422,66 @@
           <tr>
             <td>Quantization:</td>
             <td>
+<!--
               <select name="quant_dc_3">
-                <!-- Options from 1 to 255 -->
-                <option value="1">1</option>
+                <option value="1" selected>1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4">4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_dc_3" type="range" value="1" min="1" max="255">
             </td>
             <td>
+<!--
               <select name="quant_ac_3">
                 <option value="1">1</option>
                 <option value="2">2</option>
-                <!-- ... -->
-                <option value="8" selected>8</option>
-                <!-- ... -->
+                <option value="4" selected>4</option>
+                <option value="8">8</option>
+                <option value="16">16</option>
+                <option value="32">32</option>
+                <option value="64">64</option>
+                <option value="128">128</option>
                 <option value="255">255</option>
               </select>
+-->
+<input name="quant_ac_3" type="range" value="4" min="1" max="255">
             </td>
           </tr>
           <tr>
             <td>Huffman:</td>
             <td>
               <select name="huff_dc_3">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0" selected>skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8">full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
             <td>
               <select name="huff_ac_3">
-                <option value="0">0</option>
-                <option value="1" selected>1</option>
-                <!-- Add other values as needed -->
+                <option value="0">skip</option>
+                <option value="1">1 bit</option>
+                <option value="2">2 bits</option>
+                <option value="3">3 bits</option>
+                <option value="4">4 bits</option>
+                <option value="5">5 bits</option>
+                <option value="6">6 bits</option>
+                <option value="7">7 bits</option>
+                <option value="8" selected>full range</option>
+                <option value="9">2 bytes</option>
               </select>
             </td>
           </tr>
@@ -420,21 +500,23 @@
 
   <!-- Right column -->
   <div class="right-column">
-    <!-- First row (now Instagrammable image) -->
+    <!-- First row -->
+    <div class="image-row">
+      <h3>Real ASCII JPEG</h3>
+      <div id="jpeg-div">
+        <img id="jpeg" src="" alt="JPEG Image">
+      </div>
+      <div class="button-container">
+        <button id="download-jpeg">Download real ASCII JPEG</button>
+      </div>
+    </div>
+
+    <!-- Second row -->
     <div class="image-row">
       <h3>Instagrammable image</h3>
       <img id="png" src="" alt="Instagrammable Image">
       <div class="button-container">
         <button id="download-png">Download Instagrammable image</button>
-      </div>
-    </div>
-
-    <!-- Second row (now Original JPEG) -->
-    <div class="image-row">
-      <h3>Original JPEG</h3>
-      <img id="jpeg" src="" alt="JPEG Image">
-      <div class="button-container">
-        <button id="download-jpeg">Download original JPEG</button>
       </div>
     </div>
   </div>
@@ -512,7 +594,7 @@
     });
 
     // Attach event listeners to Quantization selects
-    document.querySelectorAll('select[name^="quant_dc_"], select[name^="quant_ac_"]').forEach(select => {
+    document.querySelectorAll('input[name^="quant_dc_"], input[name^="quant_ac_"]').forEach(select => {
       select.addEventListener('change', update);
     });
 
@@ -554,8 +636,8 @@
       // Get values from enabled components
       const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
       for (const component of enabledComponents) {
-        const quant_dc_select = component.querySelector('select[name^="quant_dc_"]');
-        const quant_ac_select = component.querySelector('select[name^="quant_ac_"]');
+        const quant_dc_select = component.querySelector('input[name^="quant_dc_"]');
+        const quant_ac_select = component.querySelector('input[name^="quant_ac_"]');
         const huff_dc_select = component.querySelector('select[name^="huff_dc_"]');
         const huff_ac_select = component.querySelector('select[name^="huff_ac_"]');
 
@@ -571,8 +653,8 @@
       // Get ASCII content from textarea
       const ascii = textarea.value;
 
-      // Check that the textbox content only has printable ASCII characters and newline
-      const asciiRegex = /^[\x20-\x7E\n]*$/;
+      // Check that the textbox content only has printable ASCII characters and whitespace
+      const asciiRegex = /^[\x20-\x7E\r\n\t]*$/;
       if (!asciiRegex.test(ascii)) {
         statusLine.textContent = 'Error: Textbox content must contain only printable ASCII characters.';
         return;

@@ -61,7 +61,7 @@ function generateJPEG(width, height, nb_components, ascii_data)
   dqt_data[0] = 0x00; // Precision and table ID
   // precision (0,1)
   // index (0,1,2,3)
-  dqt_data.fill(0x80, 1); // Quantization table values
+  dqt_data.fill(0x01, 1); // Quantization table values
   jpeg_file.append_marker(0xFFDB, dqt_data);
 
   // DHT (Define Huffman Table) for DC and AC tables
@@ -70,11 +70,36 @@ function generateJPEG(width, height, nb_components, ascii_data)
   // index (0,1,2,3)
 
   // DC table: always zero
-  const dc_type = 3;
+  const dc_type = 0;
   let dc_lengths;
   let dc_symbols;
   switch ( dc_type )
   {
+  case -7:
+    // 0000xxxx
+    // 0001xxxx
+    // 0010xxxx
+    // 0011xxxx
+    // 0100xxxx
+    // 0101xxxx
+    // 0110xxxx
+    // 0111xxxx
+    // 1000xxxx
+    // 1001xxxx
+    // 1010xxxx
+    // 1011xxxx
+    // 1100xxxx
+    // 1101xxxx
+    // 1110xxxx
+    // 1111xxxx
+    // dc_lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    // dc_symbols = new Uint8Array(15);
+    // dc_symbols.fill(4);
+    // dc_symbols[0] = 0;
+    dc_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    dc_symbols = new Uint8Array(127);
+//    dc_symbols.fill(1);
+    break;
   case 0:
     dc_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
     dc_symbols = new Uint8Array(128);
@@ -98,11 +123,38 @@ function generateJPEG(width, height, nb_components, ascii_data)
   jpeg_file.append_marker(0xFFC4, [0x00], dc_lengths, dc_symbols);
 
   // AC table: ASCII value
-  const ac_type = 0;
+  const ac_type = 10;
   let ac_lengths;
   let ac_symbols;
   switch ( ac_type )
   {
+  case -7:
+    // 0000xxxx
+    // 0001xxxx
+    // 0010xxxx
+    // 0011xxxx
+    // 0100xxxx
+    // 0101xxxx
+    // 0110xxxx
+    // 0111xxxx
+    // 1000xxxx
+    // 1001xxxx
+    // 1010xxxx
+    // 1011xxxx
+    // 1100xxxx
+    // 1101xxxx
+    // 1110xxxx
+    // 1111xxxx
+    // ac_lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    // ac_symbols = new Uint8Array(15);
+    // ac_symbols.fill(4);
+    // ac_symbols[0] = 0;
+    ac_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    ac_symbols = new Uint8Array(127);
+    ac_symbols.fill(1);
+    for ( let xxx = 0x20; xxx < 0x40; xxx++ )
+      ac_symbols[xxx >> 1] = 0;
+    break;
   case 0:
     // every byte is EOB.
     ac_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -275,7 +327,7 @@ function generateJPEG(width, height, nb_components, ascii_data)
   for ( let i = 0; i < nb_components; i++ )
   {
     sof_data[6 + (i * 3)] = 1 + i;          // Component identifier
-    sof_data[7 + (i * 3)] = (i == 0) ? 0x11 : 0x22;           // Subsampling factors
+    sof_data[7 + (i * 3)] = (i == 0) ? 0x11 : 0x11;           // Subsampling factors
     sof_data[8 + (i * 3)] = 0;              // Quantization table index (0,1,2,3)
   }
   jpeg_file.append_marker(0xFFC0, sof_data);
@@ -325,9 +377,9 @@ function main(argc, argv)
 
   const output_jpeg = argv[2];
 
-  const width = 512;
-  const height = 512;
-  const nb_components = 3;
+  const width = 128;
+  const height = 128;
+  const nb_components = 1;
 
   const jpeg_data = generateJPEG(width, height, nb_components, ascii_data);
 
