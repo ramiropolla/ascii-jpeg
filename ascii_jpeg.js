@@ -96,8 +96,11 @@ function get_dht(val, klass) {
         symbols[xxx >> 1] = 0;
       break;
     case 0:
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(128);
+      // NOTE: FULL 0
+      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(255);
+      // lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
+      // symbols = new Uint8Array(128);
       break;
     case 1:
       lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -188,6 +191,43 @@ function get_dht(val, klass) {
       symbols[0x58] = 0; // X
       symbols[0x59] = 0; // Y
       symbols[0x5A] = 0; // Z
+      break;
+    case 10:
+      // 0000     -> EOB
+      // 0001     -> EOB
+      // 0010     -> EOB
+      // 0011xxxx -> 4 bits
+      // 0100xxxx -> 4 bits
+      // 0101xxxx -> 4 bits
+      // 0110xxxx -> 4 bits
+      // 0111xxxx -> 4 bits
+      // 1000     -> EOB
+      // 1001     -> EOB
+      // 1010     -> EOB
+      // 1011     -> EOB
+      // 1100     -> EOB
+      // 1101     -> EOB
+      // 1110     -> EOB
+      // 11110000 -> EOB
+      // 11110001 -> EOB
+      // 11110010 -> EOB
+      // 11110011 -> EOB
+      // 11110100 -> EOB
+      // 11110101 -> EOB
+      // 11110110 -> EOB
+      // 11110111 -> EOB
+      // 11111000 -> EOB
+      // 11111001 -> EOB
+      // 11111010 -> EOB
+      // 11111011 -> EOB
+      // 11111100 -> EOB
+      // 11111101 -> EOB
+      // 11111110 -> EOB
+      // 11111111 -> does not happen
+      lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(30);
+      for ( let i = 3; i < 8; i++ )
+        symbols[i] = 4;
       break;
     default:
       console.error('Invalid DC Huffman type:', val);

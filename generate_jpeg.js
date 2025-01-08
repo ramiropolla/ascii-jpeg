@@ -75,6 +75,43 @@ function generateJPEG(width, height, nb_components, ascii_data)
   let dc_symbols;
   switch ( dc_type )
   {
+  case -4:
+    // 0000     -> EOB
+    // 0001xxxx -> 4 bits
+    // 0010xxxx -> 4 bits
+    // 0011xxxx -> 4 bits
+    // 0100xxxx -> 4 bits
+    // 0101xxxx -> 4 bits
+    // 0110xxxx -> 4 bits
+    // 0111xxxx -> 4 bits
+    // 1000     -> EOB
+    // 1001     -> EOB
+    // 1010     -> EOB
+    // 1011     -> EOB
+    // 1100     -> EOB
+    // 1101     -> EOB
+    // 1110     -> EOB
+    // 11110000 -> EOB
+    // 11110001 -> EOB
+    // 11110010 -> EOB
+    // 11110011 -> EOB
+    // 11110100 -> EOB
+    // 11110101 -> EOB
+    // 11110110 -> EOB
+    // 11110111 -> EOB
+    // 11111000 -> EOB
+    // 11111001 -> EOB
+    // 11111010 -> EOB
+    // 11111011 -> EOB
+    // 11111100 -> EOB
+    // 11111101 -> EOB
+    // 11111110 -> EOB
+    // 11111111 -> does not happen
+    dc_lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0]);
+    dc_symbols = new Uint8Array(30);
+    for ( let i = 1; i < 8; i++ )
+      dc_symbols[i] = 4;
+    break;
   case -7:
     // 0000xxxx
     // 0001xxxx
@@ -101,8 +138,8 @@ function generateJPEG(width, height, nb_components, ascii_data)
 //    dc_symbols.fill(1);
     break;
   case 0:
-    dc_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
-    dc_symbols = new Uint8Array(128);
+    dc_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0]);
+    dc_symbols = new Uint8Array(255);
     break;
   case 1:
     dc_lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -123,11 +160,48 @@ function generateJPEG(width, height, nb_components, ascii_data)
   jpeg_file.append_marker(0xFFC4, [0x00], dc_lengths, dc_symbols);
 
   // AC table: ASCII value
-  const ac_type = 10;
+  const ac_type = -4;
   let ac_lengths;
   let ac_symbols;
   switch ( ac_type )
   {
+  case -4:
+    // 0000     -> EOB
+    // 0001xxxx -> 4 bits
+    // 0010xxxx -> 4 bits
+    // 0011xxxx -> 4 bits
+    // 0100xxxx -> 4 bits
+    // 0101xxxx -> 4 bits
+    // 0110xxxx -> 4 bits
+    // 0111xxxx -> 4 bits
+    // 1000     -> EOB
+    // 1001     -> EOB
+    // 1010     -> EOB
+    // 1011     -> EOB
+    // 1100     -> EOB
+    // 1101     -> EOB
+    // 1110     -> EOB
+    // 11110000 -> EOB
+    // 11110001 -> EOB
+    // 11110010 -> EOB
+    // 11110011 -> EOB
+    // 11110100 -> EOB
+    // 11110101 -> EOB
+    // 11110110 -> EOB
+    // 11110111 -> EOB
+    // 11111000 -> EOB
+    // 11111001 -> EOB
+    // 11111010 -> EOB
+    // 11111011 -> EOB
+    // 11111100 -> EOB
+    // 11111101 -> EOB
+    // 11111110 -> EOB
+    // 11111111 -> does not happen
+    ac_lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0]);
+    ac_symbols = new Uint8Array(30);
+    for ( let i = 1; i < 8; i++ )
+      ac_symbols[i] = 4;
+    break;
   case -7:
     // 0000xxxx
     // 0001xxxx
