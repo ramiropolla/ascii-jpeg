@@ -22,13 +22,13 @@
     align-items: flex-start;
   }
 
-  /* Left column */
-  .left-column {
+  /* JPEG column */
+  .jpeg-column {
     flex: 1;
   }
 
-  /* Middle column */
-  .middle-column {
+  /* ASCII column */
+  .ascii-column {
     flex: 1;
     margin-left: 20px;
     margin-right: 20px;
@@ -44,9 +44,37 @@
   }
 
   /* Style the labels to look like buttons */
+  label.option-xabel {
+    display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    margin: 10px;
+    border: 2px solid #bb86fc;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+    color: #e0e0e0;
+  }
+
+  /* Change background on hover */
+  label.option-xabel:hover {
+    background-color: #1f1f1f;
+  }
+
+  /* Style the selected label */
+  input[type="radio"]:checked + label.option-xabel {
+    background-color: #bb86fc;
+    color: #000000;
+  }
+
+
+  /* Style the labels to look like buttons */
   label.option-label {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 6px 10px;
     margin: 5px;
     border: 2px solid #bb86fc;
     border-radius: 4px;
@@ -112,7 +140,7 @@
   }
 
   /* Textarea in the middle column */
-  .middle-column textarea {
+  .ascii-column textarea {
     flex: 1;
     resize: none;
     background-color: #1e1e1e;
@@ -123,7 +151,7 @@
   }
 
   /* Heading above the textarea */
-  .middle-column h3 {
+  .ascii-column h3 {
     margin-top: 0;
     margin-bottom: 10px;
     color: #bb86fc;
@@ -138,7 +166,7 @@
   }
 
   /* Ensure columns stretch equally */
-  .left-column, .middle-column, .right-column {
+  .jpeg-column, .ascii-column, .right-column {
     align-self: stretch;
   }
 
@@ -181,7 +209,7 @@
     margin: 0 auto; /* Center image horizontally */
   }
 
-  /* Set specific size for the Real ASCII JPEG */
+  /* Set specific size for the ASCII JPEG */
   #jpeg-div {
     width: 128px;
     height: 128px;
@@ -219,24 +247,9 @@
 <body>
 
 <div class="container">
-  <!-- Left column -->
-  <div class="left-column">
-    <!-- Image Size labels -->
+  <!-- JPEG column -->
+  <div class="jpeg-column">
     <div id="image-sizes">
-      <input type="radio" id="size8" name="image_size">
-      <label class="option-label" for="size8">8x8</label>
-
-      <input type="radio" id="size16" name="image_size" checked>
-      <label class="option-label" for="size16">16x16</label>
-
-      <input type="radio" id="size32" name="image_size">
-      <label class="option-label" for="size32">32x32</label>
-
-      <input type="radio" id="size64" name="image_size">
-      <label class="option-label" for="size64">64x64</label>
-
-      <input type="radio" id="size128" name="image_size">
-      <label class="option-label" for="size128">128x128</label>
     </div>
 
     <!-- Radio buttons and labels -->
@@ -496,10 +509,10 @@
     </div>
   </div>
 
-  <!-- Middle column -->
-  <div class="middle-column">
+  <!-- ASCII column -->
+  <div class="ascii-column">
     <div class="header-row">
-      <h3>ASCII JPEG</h3>
+      <h3>ASCII</h3>
     </div>
     <textarea id="textbox"></textarea>
   </div>
@@ -508,7 +521,7 @@
   <div class="right-column">
     <!-- First row -->
     <div class="image-row">
-      <h3>Real ASCII JPEG</h3>
+      <h3>ASCII JPEG</h3>
       <div id="jpeg-div">
         <img id="jpeg" src="" alt="JPEG Image">
       </div>
@@ -546,8 +559,43 @@
 
   // JavaScript to enable/disable components and handle updates
   document.addEventListener('DOMContentLoaded', function() {
+
+    // Create image sizes table
+    const div_image_sizes = document.getElementById("image-sizes");
+    const image_size_widths = [ 8, 16, 32, 64, 128 ];
+    const image_size_heights = [ 8, 16, 32, 64, 128 ];
+    const image_size_table = document.createElement("table");
+    for ( width of image_size_widths )
+    {
+      const tr = document.createElement("tr");
+      for ( height of image_size_heights )
+      {
+        const td = document.createElement("td");
+        {
+          const name = `${width}x${height}`;
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.id   = `size${name}`;
+          input.name = "image_size";
+          input.addEventListener("change", update);
+          if ( width == 16 )
+            input.checked = true;
+          td.appendChild(input);
+
+          const label = document.createElement("label");
+          label.className = "option-xabel";
+          label.htmlFor   = `size${name}`;
+          label.innerText = name;
+          td.appendChild(label);
+        }
+        image_size_table.appendChild(td);
+      }
+      image_size_table.appendChild(tr);
+    }
+    div_image_sizes.appendChild(image_size_table);
+
     const colorModes = document.querySelectorAll('input[name="color_mode"]');
-    const imageSizeRadios = document.querySelectorAll('input[name="image_size"]');
     const components = {
       1: document.getElementById('component1'),
       2: document.getElementById('component2'),
@@ -594,11 +642,6 @@
       radio.addEventListener('change', updateComponents);
     });
 
-    // Attach event listeners to image size radio buttons
-    imageSizeRadios.forEach(radio => {
-      radio.addEventListener('change', update);
-    });
-
     // Attach event listeners to Quantization selects
     document.querySelectorAll('input[name^="quant_dc_"], input[name^="quant_ac_"]').forEach(select => {
       select.addEventListener('change', update);
@@ -622,6 +665,7 @@
         const sizeValue = selectedSizeRadio.id.replace('size', '');
         return parseInt(sizeValue);
       }
+      console.log("not checked");
       return 64; // default size
     }
 
