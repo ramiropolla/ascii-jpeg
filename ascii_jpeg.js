@@ -80,73 +80,131 @@ class JpegFile {
 // Global variable to store the JPEG blob
 window.jpeg_blob = null;
 
-function get_dht(val, klass) {
-  // val = -7;
-  let lengths, symbols;
+function get_dht(val, klass)
+{
+  const fill_with_zeros = false;
+  // const fill_with_zeros = true;
+  const l7 = fill_with_zeros ? 127 : 0;
+  // val = klass == 0 ? 0 : 23; // skip for dc, poetry for ac
+  let count, lengths, symbols, quant;
+  let count7;
   switch (val) {
     case -7:
+      quant = 1;
       // WIP there will never be a sequence of 7 1s in a row.
       // if DC and AC are 7-bit, this will work.
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(127);
+      count = 127;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, count, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count);
       if ( klass == 0 )
         break;
-      symbols.fill(1);
+      symbols.fill(7);
       for ( let xxx = 0x20; xxx < 0x40; xxx++ )
         symbols[xxx >> 1] = 0;
       break;
+    // TODO add skip (7 bits)
+
+
     case 0:
-      // NOTE: FULL 0
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(255);
-      // lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
-      // symbols = new Uint8Array(128);
+      // skip
+      // 0xxxxxxx
+      quant = 1;
+      count = 128;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, count + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7);
       break;
     case 1:
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(64).fill(1);
+      // 1 bit
+      // -1, 1
+      // 0xxxxxxV
+      quant = 64;
+      count = 64;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, count, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(1, 0, count);
       break;
     case 2:
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(32).fill(2);
+      // 2 bits
+      // -3..-2, 2..3
+      // 0xxxxxVV
+      quant = 32;
+      count = 32;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, count, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(2, 0, count);
       break;
     case 3:
-      lengths = new Uint8Array([0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(16).fill(3);
+      // 3 bits
+      // -7..-4, 4..7
+      // 0xxxxVVV
+      quant = 16;
+      count = 16;
+      lengths = new Uint8Array([0, 0, 0, 0, count, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(3, 0, count);
       break;
     case 4:
-      lengths = new Uint8Array([0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(8).fill(4);
+      // 4 bits
+      // -15..-8, 8..15
+      // 0xxxVVVV
+      quant = 8;
+      count = 8;
+      lengths = new Uint8Array([0, 0, 0, count, 0, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(4, 0, count);
       break;
     case 5:
-      lengths = new Uint8Array([0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(4).fill(5);
+      // 5 bits
+      // -31..-16, 16..31
+      // 0xxVVVVV
+      quant = 4;
+      count = 4;
+      lengths = new Uint8Array([0, 0, count, 0, 0, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(5, 0, count);
       break;
     case 6:
-      lengths = new Uint8Array([0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(2).fill(6);
+      // 6 bits
+      // -63..-32, 32..63
+      // 0xVVVVVV
+      quant = 2;
+      count = 2;
+      lengths = new Uint8Array([0, count, 0, 0, 0, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(6, 0, count);
       break;
     case 7:
-      lengths = new Uint8Array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(1).fill(7);
+      // 7 bits
+      // -127..-64, 64..127
+      // 0VVVVVVV
+      quant = 1;
+      count = 1;
+      lengths = new Uint8Array([count, 0, 0, 0, 0, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7).fill(7, 0, count);
       break;
+
     case 8:
-      // 00xxxxxx
-      // 010xxxxx
-      // 0110xxxx
-      // 01110xxx
-      // 011110xx
-      // 0111110x
-      // 0111111x
-      lengths = new Uint8Array([0, 1, 1, 1, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array([6, 5, 4, 3, 2, 1, 1]);
+      // wide range
+      // 00VVVVVV -63..-32, 32..63
+      // 010VVVVV -31..-16, 16..31
+      // 0110VVVV -15..-8, 8..15
+      // 01110VVV -7..-4, 4..7
+      // 011110VV -3..-2, 2..3
+      // 0111110V -1, 1
+      // 0111111V -1, 1
+      quant = 1;
+      count = 7;
+      lengths = new Uint8Array([0, 1, 1, 1, 1, 1, 2, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + l7);
+      symbols[0] = 6;
+      symbols[1] = 5;
+      symbols[2] = 4;
+      symbols[3] = 3;
+      symbols[4] = 2;
+      symbols[5] = 1;
+      symbols[6] = 1;
       break;
+
     case 9:
       // every 2 bytes are (ignored) + (8 bits),
       // except for a few values which are EOB.
+      quant = 1;
       lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(128);
-      symbols.fill(0x08);
+      symbols = new Uint8Array(128).fill(8);
       symbols[0x0A] = 0; // \n
       symbols[0x0D] = 0; // \r
       symbols[0x20] = 0; // SPACE
@@ -165,37 +223,38 @@ function get_dht(val, klass) {
       symbols[0x2D] = 0; // -
       symbols[0x2E] = 0; // .
       symbols[0x2F] = 0; // /
-      symbols[0x41] = 0; // A
-      symbols[0x42] = 0; // B
-      symbols[0x43] = 0; // C
-      symbols[0x44] = 0; // D
-      symbols[0x45] = 0; // E
-      symbols[0x46] = 0; // F
-      symbols[0x47] = 0; // G
-      symbols[0x48] = 0; // H
-      symbols[0x49] = 0; // I
-      symbols[0x4A] = 0; // J
-      symbols[0x4B] = 0; // K
-      symbols[0x4C] = 0; // L
-      symbols[0x4D] = 0; // M
-      symbols[0x4E] = 0; // N
-      symbols[0x4F] = 0; // O
-      symbols[0x50] = 0; // P
-      symbols[0x51] = 0; // Q
-      symbols[0x52] = 0; // R
-      symbols[0x53] = 0; // S
-      symbols[0x54] = 0; // T
-      symbols[0x55] = 0; // U
-      symbols[0x56] = 0; // V
-      symbols[0x57] = 0; // W
-      symbols[0x58] = 0; // X
-      symbols[0x59] = 0; // Y
-      symbols[0x5A] = 0; // Z
+      // symbols[0x41] = 0; // A
+      // symbols[0x42] = 0; // B
+      // symbols[0x43] = 0; // C
+      // symbols[0x44] = 0; // D
+      // symbols[0x45] = 0; // E
+      // symbols[0x46] = 0; // F
+      // symbols[0x47] = 0; // G
+      // symbols[0x48] = 0; // H
+      // symbols[0x49] = 0; // I
+      // symbols[0x4A] = 0; // J
+      // symbols[0x4B] = 0; // K
+      // symbols[0x4C] = 0; // L
+      // symbols[0x4D] = 0; // M
+      // symbols[0x4E] = 0; // N
+      // symbols[0x4F] = 0; // O
+      // symbols[0x50] = 0; // P
+      // symbols[0x51] = 0; // Q
+      // symbols[0x52] = 0; // R
+      // symbols[0x53] = 0; // S
+      // symbols[0x54] = 0; // T
+      // symbols[0x55] = 0; // U
+      // symbols[0x56] = 0; // V
+      // symbols[0x57] = 0; // W
+      // symbols[0x58] = 0; // X
+      // symbols[0x59] = 0; // Y
+      // symbols[0x5A] = 0; // Z
       break;
+
     case 10:
-      // 0000     -> EOB
-      // 0001     -> EOB
-      // 0010     -> EOB
+      // 0000     -> EOB control codes (includes CR LF)
+      // 0001     -> EOB control codes
+      // 0010     -> EOB (space) !"#$%&'()*+,-./
       // 0011xxxx -> 4 bits
       // 0100xxxx -> 4 bits
       // 0101xxxx -> 4 bits
@@ -224,11 +283,57 @@ function get_dht(val, klass) {
       // 11111101 -> EOB
       // 11111110 -> EOB
       // 11111111 -> does not happen
+      // NOTE:
+      //   LF (0x0a) 0000 1010 => EOB EOB
+      //   CR (0x0d) 0000 1110 => EOB EOB
+      quant = 1;
       lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0]);
       symbols = new Uint8Array(30);
       for ( let i = 3; i < 8; i++ )
         symbols[i] = 4;
       break;
+
+    // TODO same thing without run
+    // similar to n bits, but:
+    // - adds a run value to the codes (breaks ffmpeg if not done carefully)
+    // - turns the last count7 codes into EOB
+    case 21:
+      // 1 bit
+      // -1, 1
+      // 0xxxxxxV
+      count = 61;
+      count7 = 5;
+      quant = 1;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, count, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + count7 + l7);
+      for ( let i = 0; i < count; i++ )
+        symbols[i] = 1 | ((i & 15) << 4);
+      break;
+    case 22:
+      // 2 bits
+      // -3..-2, 2..3
+      // 0xxxxxVV
+      count = 30;
+      count7 = 7;
+      quant = 1;
+      lengths = new Uint8Array([0, 0, 0, 0, 0, count, 0, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + count7 + l7);
+      for ( let i = 0; i < count; i++ )
+        symbols[i] = 2 | ((i & 15) << 4);
+      break;
+    case 23:
+      // 3 bits
+      // -7..-4, 4..7
+      // 0xxxxVVV
+      count = 15;
+      count7 = 7;
+      quant = 1;
+      lengths = new Uint8Array([0, 0, 0, 0, count, 0, 0, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
+      symbols = new Uint8Array(count + count7 + l7);
+      for ( let i = 0; i < count; i++ )
+        symbols[i] = 3 | ((i & 15) << 4);
+      break;
+
     default:
       console.error('Invalid DC Huffman type:', val);
       break;
@@ -236,8 +341,122 @@ function get_dht(val, klass) {
   return [ lengths, symbols ];
 }
 
-function generateJPEG(colorspace, width, height, components, ascii_data) {
+function decode_xbits(code, len)
+{
+  const signbit = 1 << (len - 1);
+  const sign = (code & signbit) ? 0 : -1;
+  if ( sign )
+    return code - ((-1) & ((1 << len) - 1));
+  return code;
+}
+
+function encode_binary_str(huffbits, nb_xbits, huffcode, xbits)
+{
+  let ret = "";
+  for (let i = 0; i < huffbits; i++)
+    ret += (huffcode & (1 << (huffbits - i - 1))) ? '1' : '0';
+  for (let i = 0; i < nb_xbits; i++)
+    ret += (xbits & (1 << (nb_xbits - i - 1))) ? '1' : '0';
+  return ret;
+}
+
+function to_ascii_char(ascii_val)
+{
+  if (ascii_val > 0x1F && ascii_val < 0x7F)
+    return String.fromCharCode(ascii_val);
+  switch (ascii_val) {
+  case 0x00: return '\\0';
+  case 0x07: return '\\a';
+  case 0x08: return '\\b';
+  case 0x09: return '\\t';
+  case 0x0A: return '\\n';
+  case 0x0B: return '\\v';
+  case 0x0C: return '\\f';
+  case 0x0D: return '\\r';
+  }
+  return '\\x' + ascii_val.toString(16).toUpperCase().padStart(2, '0');
+  // return '\\o' + ascii_val.toString(8).padStart(3, '0');
+}
+
+function dump_dht(str, lengths, symbols)
+{
+  // console.log(str, lengths, symbols);
+  if ( 0 ) {
+    const codes = [];
+    let nb_codes = 0;
+    let huffcode = 0;
+    for (const [i, length] of lengths.entries()) {
+      for (let j = 0; j < length; j++) {
+        codes.push({
+          "huffbits": i + 1,
+          "nb_xbits": symbols[nb_codes],
+          "huffcode": huffcode,
+        });
+        nb_codes += 1;
+        huffcode += 1;
+      }
+      huffcode = huffcode << 1;
+    }
+    console.log(str, codes);
+  } else {
+    const codes = [];
+    let nb_codes = 0;
+    let huffcode = 0;
+    for (const [i, length] of lengths.entries()) {
+      const huffbits = i + 1;
+      for (let j = 0; j < length; j++) {
+        const nb_xbits = symbols[nb_codes];
+        for (let k = 0; k < 1 << nb_xbits; k++) {
+          const huffcode_str = encode_binary_str(huffbits, nb_xbits, huffcode, k);
+          const xbits_val = decode_xbits(k, nb_xbits);
+          const ascii_val = parseInt(huffcode_str, 2);
+          const ascii_char = to_ascii_char(ascii_val);
+          codes.push({
+            "huffcode": huffcode_str,
+            "ascii_val": ascii_val,
+            "ascii_char": ascii_char,
+            "value": xbits_val,
+          });
+          // console.log(huffcode_str, ascii_val, ascii_char, xbits_val);
+        }
+        nb_codes += 1;
+        huffcode += 1;
+      }
+      huffcode = huffcode << 1;
+    }
+    console.log(codes.toSorted((l, r) => {
+      return l.value - r.value;
+    }));
+  }
+
+  // for ( int i = 0; i < 16; i++ )
+  // {
+  //   int length = dht_lengths[i];
+  //   for ( int j = 0; j < length; j++ )
+  //   {
+  //     code_t *pcode = &codes[nb_codes];
+  //     pcode->huffbits = i + 1;
+  //     pcode->nb_xbits = dht_symbols[nb_codes];
+  //     pcode->huffcode = huffcode;
+  //     nb_codes++;
+  //     huffcode++;
+  //   }
+  //   huffcode <<= 1;
+  // }
+  // console.log(str, codes);
+}
+
+function generateJPEG(colorspace, width, height, components, ascii_data)
+{
   let subsampling;
+  // convert:
+  // 444: subsampling = [ 0x11, 0x11, 0x11 ];
+  // 422: subsampling = [ 0x21, 0x11, 0x11 ];
+  // 420: subsampling = [ 0x22, 0x11, 0x11 ];
+  // ffmpeg:
+  // 444: subsampling = [ 0x12, 0x12, 0x12 ];
+  // 422: subsampling = [ 0x22, 0x12, 0x12 ];
+  // 420: subsampling = [ 0x22, 0x11, 0x11 ];
   switch (colorspace) {
     case "Grayscale":
       subsampling = [ 0x11 ];
@@ -269,6 +488,8 @@ function generateJPEG(colorspace, width, height, components, ascii_data) {
     const quant_ac = components[i][1];
     const dqt_data = new Uint8Array(65);
 
+console.log(quant_ac);
+
     // Precision and table ID
     dqt_data[0] = i;
     // Set DC value
@@ -286,16 +507,18 @@ function generateJPEG(colorspace, width, height, components, ascii_data) {
 
     // DC table
     const [ dc_lengths, dc_symbols ] = get_dht(huff_dc, 0);
+    // dump_dht(`[${i}.dc]`, dc_lengths, dc_symbols);
     if (!dc_lengths)
         return null;
     jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x00 | i]), dc_lengths, dc_symbols);
 
     // AC table
     const [ ac_lengths, ac_symbols ] = get_dht(huff_ac, 1);
+    // dump_dht(`[${i}.ac]`, ac_lengths, ac_symbols);
     if (!ac_lengths)
         return null;
-    if ( ac_symbols.length == 64 )
-      console.log("ASDFL:KJ");
+    // if ( ac_symbols.length == 64 )
+    //   console.log("ASDFL:KJ");
     jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x10 | i]), ac_lengths, ac_symbols);
   }
 

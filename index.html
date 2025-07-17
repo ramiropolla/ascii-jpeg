@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ASCII JPEG</title>
+<title>ascii.jpeg</title>
 <style>
   /* Dark mode styles */
   body {
@@ -11,70 +11,82 @@
     font-family: monospace;
   }
 
-  /* Hide the radio buttons */
-  input[type="radio"] {
-    display: none;
-  }
-
-  /* Container for columns */
+  /* Container */
   .container {
     display: flex;
     align-items: flex-start;
   }
 
-  /* JPEG column */
-  .jpeg-column {
-    flex: 1;
+  .box {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    background-color: #1e1e1e;
   }
 
-  /* ASCII column */
-  .ascii-column {
+  .box span {
+    font-weight: bold;
+    color: #bb86fc;
+  }
+
+  .box:last-child {
+    margin-bottom: 0;
+  }
+
+
+  /*** TITLES ***/
+  .title {
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .title h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+    color: #bb86fc;
+  }
+
+
+  /*** HEADERS ***/
+  .col_headers {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Hide the radio buttons */
+  .col_headers input[type="radio"] {
+    display: none;
+  }
+
+
+  /*** ASCII ***/
+  .col_ascii {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     margin-left: 20px;
     margin-right: 20px;
-    display: flex;
-    flex-direction: column;
   }
 
-  /* Right column */
-  .right-column {
+  /* Output column */
+  .col_output {
     flex: 1;
     display: flex;
     flex-direction: column;
   }
-
-  /* Style the labels to look like buttons */
-  label.option-xabel {
-    display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 100%;
-    margin: 10px;
-    border: 2px solid #bb86fc;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s;
-    color: #e0e0e0;
-  }
-
-  /* Change background on hover */
-  label.option-xabel:hover {
-    background-color: #1f1f1f;
-  }
-
-  /* Style the selected label */
-  input[type="radio"]:checked + label.option-xabel {
-    background-color: #bb86fc;
-    color: #000000;
-  }
-
 
   /* Style the labels to look like buttons */
   label.option-label {
     display: inline-block;
-    padding: 6px 10px;
+    padding: 10px 10px;
     margin: 5px;
     border: 2px solid #bb86fc;
     border-radius: 4px;
@@ -86,7 +98,7 @@
 
   /* Change background on hover */
   label.option-label:hover {
-    background-color: #1f1f1f;
+    background-color: #2f2f2f;
   }
 
   /* Style the selected label */
@@ -108,13 +120,6 @@
     opacity: 0.5;
   }
 
-  .component-title {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #bb86fc;
-  }
-
-  /* Table styles for components */
   .component table {
     width: 100%;
     border-collapse: collapse;
@@ -140,22 +145,14 @@
   }
 
   /* Textarea in the middle column */
-  .ascii-column textarea {
+  .col_ascii textarea {
     flex: 1;
-    resize: none;
     background-color: #1e1e1e;
-    color: #e0e0e0;
     border: 1px solid #333333;
     border-radius: 4px;
     padding: 10px;
-  }
-
-  /* Heading above the textarea */
-  .ascii-column h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #bb86fc;
-    text-align: center;
+    resize: none;
+    color: #e0e0e0;
   }
 
   /* Status line */
@@ -166,38 +163,30 @@
   }
 
   /* Ensure columns stretch equally */
-  .jpeg-column, .ascii-column, .right-column {
+  .col_headers, .col_ascii, .col_output {
     align-self: stretch;
   }
 
-  /* Right column styling */
-  .right-column {
+  /* Output column styling */
+  .col_output {
     display: flex;
     flex-direction: column;
   }
 
   .image-row {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center contents horizontally */
-    margin-bottom: 20px;
     background-color: #1e1e1e;
     border: 1px solid #333333;
     border-radius: 4px;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
   }
 
   .image-row:last-child {
     margin-bottom: 0;
-  }
-
-  .image-row h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #bb86fc;
-    text-align: center;
-    display: inline-block;
   }
 
   .image-row img {
@@ -209,7 +198,6 @@
     margin: 0 auto; /* Center image horizontally */
   }
 
-  /* Set specific size for the ASCII JPEG */
   #jpeg-div {
     width: 128px;
     height: 128px;
@@ -217,7 +205,6 @@
     align-items: center;
   }
 
-  /* Set specific size for the Instagrammable image */
   #png {
     width: 512px;
     height: 512px;
@@ -247,295 +234,57 @@
 <body>
 
 <div class="container">
-  <!-- JPEG column -->
-  <div class="jpeg-column">
-    <div id="image-sizes">
+  <!-- Headers -->
+  <div class="col_headers">
+    <div class="title">
+      <h3>headers</h3>
     </div>
 
-    <!-- Radio buttons and labels -->
-    <input type="radio" id="grayscale" name="color_mode">
-    <label class="option-label" for="grayscale">Grayscale</label>
+    <!-- Image Sizes -->
+    <div class="box" id="image-sizes">
+      <span>Size:</span>
+    </div>
 
-    <input type="radio" id="yuv444" name="color_mode" checked>
-    <label class="option-label" for="yuv444">YUV444</label>
-
-    <input type="radio" id="yuv422" name="color_mode">
-    <label class="option-label" for="yuv422">YUV422</label>
-
-    <input type="radio" id="yuv420" name="color_mode">
-    <label class="option-label" for="yuv420">YUV420</label>
-
-    <!-- Components -->
-    <div id="components">
-      <!-- Component 1 -->
-      <div class="component" id="component1">
-        <div class="component-title">Component #1</div>
-        <table>
-          <tr>
-            <th></th>
-            <th>DC</th>
-            <th>AC</th>
-          </tr>
-          <tr>
-            <td>Quantization:</td>
-            <td>
-<!--
-              <select name="quant_dc_1">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="4">4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_dc_1" type="range" value="1" min="1" max="255">
-            </td>
-            <td>
-<!--
-              <select name="quant_ac_1">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_ac_1" type="range" value="4" min="1" max="255">
-            </td>
-          </tr>
-          <tr>
-            <td>Huffman:</td>
-            <td>
-              <select name="huff_dc_1">
-                <option value="0" selected>skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8">full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-            <td>
-              <select name="huff_ac_1">
-                <option value="0">skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8" selected>full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-          </tr>
-        </table>
+    <!-- Pixel Formats -->
+    <div class="box" id="pixel-formats">
+      <div id="pixel-formats-list">
+        <span>Pixel format:</span>
       </div>
-
-      <!-- Component 2 -->
-      <div class="component" id="component2">
-        <div class="component-title">Component #2</div>
-        <table>
-          <tr>
-            <th></th>
-            <th>DC</th>
-            <th>AC</th>
-          </tr>
-          <tr>
-            <td>Quantization:</td>
-            <td>
-<!--
-              <select name="quant_dc_2">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="4">4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_dc_2" type="range" value="1" min="1" max="255">
-            </td>
-            <td>
-<!--
-              <select name="quant_ac_2">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_ac_2" type="range" value="4" min="1" max="255">
-            </td>
-          </tr>
-          <tr>
-            <td>Huffman:</td>
-            <td>
-              <select name="huff_dc_2">
-                <option value="0" selected>skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8">full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-            <td>
-              <select name="huff_ac_2">
-                <option value="0">skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8" selected>full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- Component 3 -->
-      <div class="component" id="component3">
-        <div class="component-title">Component #3</div>
-        <table>
-          <tr>
-            <th></th>
-            <th>DC</th>
-            <th>AC</th>
-          </tr>
-          <tr>
-            <td>Quantization:</td>
-            <td>
-<!--
-              <select name="quant_dc_3">
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="4">4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_dc_3" type="range" value="1" min="1" max="255">
-            </td>
-            <td>
-<!--
-              <select name="quant_ac_3">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="255">255</option>
-              </select>
--->
-<input name="quant_ac_3" type="range" value="4" min="1" max="255">
-            </td>
-          </tr>
-          <tr>
-            <td>Huffman:</td>
-            <td>
-              <select name="huff_dc_3">
-                <option value="0" selected>skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8">full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-            <td>
-              <select name="huff_ac_3">
-                <option value="0">skip</option>
-                <option value="1">1 bit</option>
-                <option value="2">2 bits</option>
-                <option value="3">3 bits</option>
-                <option value="4">4 bits</option>
-                <option value="5">5 bits</option>
-                <option value="6">6 bits</option>
-                <option value="7">7 bits</option>
-                <option value="8" selected>full range</option>
-                <option value="9">2 bytes</option>
-                <option value="10">min4</option>
-              </select>
-            </td>
-          </tr>
-        </table>
-      </div>
+      <div id="components"></div>
     </div>
   </div>
 
-  <!-- ASCII column -->
-  <div class="ascii-column">
-    <div class="header-row">
-      <h3>ASCII</h3>
+  <!-- ASCII -->
+  <div class="col_ascii">
+    <div class="title">
+      <h3>ascii</h3>
     </div>
+
+    <!-- ascii text -->
     <textarea id="textbox"></textarea>
   </div>
 
-  <!-- Right column -->
-  <div class="right-column">
-    <!-- First row -->
+  <!-- Output -->
+  <div class="col_output">
+    <div class="title">
+      <h3>ascii.jpeg</h3>
+    </div>
+
+    <!-- ascii.jpeg -->
     <div class="image-row">
-      <h3>ASCII JPEG</h3>
       <div id="jpeg-div">
-        <img id="jpeg" src="" alt="JPEG Image">
+        <img id="jpeg" src="" alt="ascii.jpeg">
       </div>
       <div class="button-container">
-        <button id="download-jpeg">Download real ASCII JPEG</button>
+        <button id="download-jpeg">Download ascii.jpeg</button>
       </div>
     </div>
 
-    <!-- Second row -->
+    <!-- baked.png -->
     <div class="image-row">
-      <h3>Instagrammable image</h3>
-      <img id="png" src="" alt="Instagrammable Image">
+      <img id="png" src="" alt="baked.png">
       <div class="button-container">
-        <button id="download-png">Download Instagrammable image</button>
+        <button id="download-png">Download baked.png</button>
       </div>
     </div>
   </div>
@@ -548,7 +297,7 @@
 <script src="ascii_jpeg.js"></script>
 
 <script>
-  // Helper function to generate options from min to max with selected value
+  /* Helper function to generate options from min to max with selected value */
   function generateOptions(min, max, selectedValue) {
     let options = '';
     for (let i = min; i <= max; i++) {
@@ -557,56 +306,185 @@
     return options;
   }
 
-  // JavaScript to enable/disable components and handle updates
+  /* JavaScript to enable/disable components and handle updates */
   document.addEventListener('DOMContentLoaded', function() {
-
-    // Create image sizes table
+    /* Image Sizes */
     const div_image_sizes = document.getElementById("image-sizes");
-    const image_size_widths = [ 8, 16, 32, 64, 128 ];
-    const image_size_heights = [ 8, 16, 32, 64, 128 ];
-    const image_size_table = document.createElement("table");
-    for ( width of image_size_widths )
+    const image_size_values = [ 8, 16, 32, 64, 128 ];
+    const default_image_size = 16;
+    for ( value of image_size_values )
     {
-      const tr = document.createElement("tr");
-      for ( height of image_size_heights )
-      {
-        const td = document.createElement("td");
-        {
-          const name = `${width}x${height}`;
+      const name = `${value}x${value}`;
+      const id = `size${name}`;
 
-          const input = document.createElement("input");
-          input.type = "radio";
-          input.id   = `size${name}`;
-          input.name = "image_size";
-          input.addEventListener("change", update);
-          if ( width == 16 )
-            input.checked = true;
-          td.appendChild(input);
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.id   = id;
+      input.name = "image_size";
+      input.addEventListener("change", update);
+      if ( value == default_image_size )
+        input.checked = true;
+      div_image_sizes.appendChild(input);
 
-          const label = document.createElement("label");
-          label.className = "option-xabel";
-          label.htmlFor   = `size${name}`;
-          label.innerText = name;
-          td.appendChild(label);
-        }
-        image_size_table.appendChild(td);
-      }
-      image_size_table.appendChild(tr);
+      const label = document.createElement("label");
+      label.className = "option-label";
+      label.htmlFor   = id;
+      label.innerText = name;
+      div_image_sizes.appendChild(label);
     }
-    div_image_sizes.appendChild(image_size_table);
 
-    const colorModes = document.querySelectorAll('input[name="color_mode"]');
-    const components = {
-      1: document.getElementById('component1'),
-      2: document.getElementById('component2'),
-      3: document.getElementById('component3')
-    };
+    /* Pixel Formats */
+    const div_pixel_formats_list = document.getElementById("pixel-formats-list");
+    const color_mode_values = [
+      "Grayscale",
+      "YUV444",
+      "YUV422",
+      "YUV420",
+    ];
+    const default_color_mode = "YUV444";
+    for ( const value of color_mode_values )
+    {
+      const name = value;
+      const id = name.toLowerCase();
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.id   = id;
+      input.name = "color_mode";
+      input.addEventListener("change", updateComponents);
+      if ( value == default_color_mode )
+        input.checked = true;
+      div_pixel_formats_list.appendChild(input);
+
+      const label = document.createElement("label");
+      label.className = "option-label";
+      label.htmlFor   = id;
+      label.innerText = name;
+      div_pixel_formats_list.appendChild(label);
+    }
+
+    /* Components */
+    const div_components = document.getElementById("components");
+    let components = [];
+    for ( let i = 0; i < 3; i++ )
+    {
+      const id = `component${i + 1}`;
+
+      const component = document.createElement("div");
+//      component.classList.add("box", "component");
+      component.className = "component";
+      component.id        = id;
+      components.push(component);
+      div_components.appendChild(component);
+
+      const table = document.createElement("table");
+
+      /* Labels */
+      let th, td, input, select, option;
+      {
+        const tr = document.createElement("tr");
+        th = document.createElement("th");
+        th.innerText = `Component #${i + 1}`;
+        tr.appendChild(th);
+        th = document.createElement("th");
+        th.innerText = "DC";
+        tr.appendChild(th);
+        th = document.createElement("th");
+        th.innerText = "AC";
+        tr.appendChild(th);
+        table.appendChild(tr);
+      }
+
+      /* Quantization */
+      {
+        const tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerText = "Quantization:";
+        tr.appendChild(td);
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.name = `quant_dc_${i + 1}`;
+        input.type = "range";
+        input.value = 1;
+        input.min = 1;
+        input.max = 255;
+        td.appendChild(input);
+        tr.appendChild(td);
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.name = `quant_ac_${i + 1}`;
+        input.type = "range";
+        input.value = 4;
+        input.min = 1;
+        input.max = 255;
+        td.appendChild(input);
+        tr.appendChild(td);
+        table.appendChild(tr);
+      }
+
+      /* Huffman */
+      {
+        const huff_values = [
+          "skip",
+          "1 bit",
+          "2 bits",
+          "3 bits",
+          "4 bits",
+          "5 bits",
+          "6 bits",
+          "7 bits",
+          "full range",
+          "2 bytes",
+          "min4",
+        ];
+
+        const tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerText = "Huffman:";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        select = document.createElement("select");
+        select.name = `huff_dc_${i + 1}`;
+        for ( const j in huff_values )
+        {
+          option = document.createElement("option");
+          option.value = j;
+          option.innerText = huff_values[j];
+          if ( j == 0 )
+            option.selected = true;
+          select.appendChild(option);
+        }
+        td.appendChild(select);
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        select = document.createElement("select");
+        select.name = `huff_ac_${i + 1}`;
+        for ( const j in huff_values )
+        {
+          option = document.createElement("option");
+          option.value = j;
+          option.innerText = huff_values[j];
+          if ( j == 8 )
+            option.selected = true;
+          select.appendChild(option);
+        }
+        td.appendChild(select);
+        tr.appendChild(td);
+
+        table.appendChild(tr);
+      }
+
+      component.appendChild(table);
+    }
+
     const statusLine = document.getElementById('status');
     const textarea = document.getElementById('textbox');
     const jpegImage = document.getElementById('jpeg');
     const pngImage = document.getElementById('png');
 
-    // Set default ASCII content after ascii_jpeg.js is loaded
+    /* Set default ASCII content after ascii_jpeg.js is loaded */
     textarea.value = default_ascii;
 
     function updateComponents() {
@@ -620,39 +498,34 @@
         enableComponent(2);
         enableComponent(3);
       }
-      update(); // Call update() after components have been updated
+      update(); /* Call update() after components have been updated */
     }
 
     function enableComponent(num) {
-      components[num].classList.remove('disabled');
-      components[num].querySelectorAll('select').forEach(el => {
+      components[num - 1].classList.remove('disabled');
+      components[num - 1].querySelectorAll('select').forEach(el => {
         el.disabled = false;
       });
     }
 
     function disableComponent(num) {
-      components[num].classList.add('disabled');
-      components[num].querySelectorAll('select').forEach(el => {
+      components[num - 1].classList.add('disabled');
+      components[num - 1].querySelectorAll('select').forEach(el => {
         el.disabled = true;
       });
     }
 
-    // Attach event listeners to color mode radio buttons
-    colorModes.forEach(radio => {
-      radio.addEventListener('change', updateComponents);
-    });
-
-    // Attach event listeners to Quantization selects
+    /* Attach event listeners to Quantization selects */
     document.querySelectorAll('input[name^="quant_dc_"], input[name^="quant_ac_"]').forEach(select => {
       select.addEventListener('change', update);
     });
 
-    // Attach event listeners to Huffman selects
+    /* Attach event listeners to Huffman selects */
     document.querySelectorAll('select[name^="huff_dc_"], select[name^="huff_ac_"]').forEach(select => {
       select.addEventListener('change', update);
     });
 
-    // Attach event listener to textarea with debounce
+    /* Attach event listener to textarea with debounce */
     let updateTimeout;
     textarea.addEventListener('input', function() {
       clearTimeout(updateTimeout);
@@ -665,25 +538,24 @@
         const sizeValue = selectedSizeRadio.id.replace('size', '');
         return parseInt(sizeValue);
       }
-      console.log("not checked");
-      return 64; // default size
+      return 64; /* default size */
     }
 
-    // The update function
+    /* The update function */
     function update() {
-      // Clear status line
+      /* Clear status line */
       statusLine.textContent = '';
 
-      // Get colorspace
+      /* Get colorspace */
       const colorspace = document.querySelector('input[name="color_mode"]:checked + label').textContent;
 
-      // Get image size
+      /* Get image size */
       const imageSize = getImageSize();
 
-      // Initialize components array
+      /* Initialize components array */
       const componentsArray = [];
 
-      // Get values from enabled components
+      /* Get values from enabled components */
       const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
       for (const component of enabledComponents) {
         const quant_dc_select = component.querySelector('input[name^="quant_dc_"]');
@@ -696,36 +568,36 @@
         const huff_dc = parseInt(huff_dc_select.value);
         const huff_ac = parseInt(huff_ac_select.value);
 
-        // Add component values as a subarray
+        /* Add component values as a subarray */
         componentsArray.push([quant_dc, quant_ac, huff_dc, huff_ac]);
       }
 
-      // Get ASCII content from textarea
+      /* Get ASCII content from textarea */
       const ascii = textarea.value;
 
-      // Check that the textbox content only has printable ASCII characters and whitespace
+      /* Check that the textbox content only has printable ASCII characters and whitespace */
       const asciiRegex = /^[\x20-\x7E\r\n\t]*$/;
       if (!asciiRegex.test(ascii)) {
         statusLine.textContent = 'Error: Textbox content must contain only printable ASCII characters.';
         return;
       }
 
-      // Call ascii_jpeg() with the parameters
+      /* Call ascii_jpeg() with the parameters */
       ascii_jpeg(colorspace, componentsArray, ascii, imageSize, imageSize);
 
-      // Update the image dimensions
+      /* Update the image dimensions */
       jpegImage.width = imageSize;
       jpegImage.height = imageSize;
     }
 
-    // Handle Download JPEG button
+    /* Handle Download JPEG button */
     const downloadJpegButton = document.getElementById('download-jpeg');
 
     downloadJpegButton.addEventListener('click', function() {
       if (window.jpeg_blob) {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(window.jpeg_blob);
-        link.download = 'ascii.jpg';
+        link.download = 'ascii.jpeg';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -734,14 +606,14 @@
       }
     });
 
-    // Handle Download Instagrammable image button
+    /* Handle Download Baked image button */
     const downloadPngButton = document.getElementById('download-png');
 
     downloadPngButton.addEventListener('click', function() {
       if (window.png_blob) {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(window.png_blob);
-        link.download = 'ascii_instagram.png';
+        link.download = 'ascii_baked.png';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -750,7 +622,7 @@
       }
     });
 
-    // Initial update
+    /* Initial update */
     updateComponents();
   });
 </script>
