@@ -1,0 +1,224 @@
+/* Dark mode styles */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: monospace;
+}
+
+/* Container */
+.container {
+  display: flex;
+  align-items: flex-start;
+}
+
+.box {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+}
+
+.box span {
+  font-weight: bold;
+  color: #bb86fc;
+}
+
+.box:last-child {
+  margin-bottom: 0;
+}
+
+
+/*** TITLES ***/
+.title {
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  color: #bb86fc;
+}
+
+
+/*** HEADERS ***/
+.col_headers {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide the radio buttons */
+.col_headers input[type="radio"] {
+  display: none;
+}
+
+
+/*** ASCII ***/
+.col_ascii {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* Output column */
+.col_output {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style the labels to look like buttons */
+label.option-label {
+  display: inline-block;
+  padding: 10px 10px;
+  margin: 5px;
+  border: 2px solid #bb86fc;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s;
+  color: #e0e0e0;
+}
+
+/* Change background on hover */
+label.option-label:hover {
+  background-color: #2f2f2f;
+}
+
+/* Style the selected label */
+input[type="radio"]:checked + label.option-label {
+  background-color: #bb86fc;
+  color: #000000;
+}
+
+/* Component styles */
+.component {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+}
+
+.component.disabled {
+  opacity: 0.5;
+}
+
+.component table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.component th, .component td {
+  padding: 5px;
+  text-align: center;
+}
+
+.component th {
+  font-weight: bold;
+  color: #bb86fc;
+}
+
+.box select {
+  width: 60px;
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+/* Textarea in the middle column */
+.col_ascii textarea {
+  flex: 1;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  padding: 10px;
+  resize: none;
+  color: #e0e0e0;
+}
+
+/* Status line */
+#status {
+  margin-top: 20px;
+  font-weight: bold;
+  color: #cf6679;
+}
+
+/* Ensure columns stretch equally */
+.col_headers, .col_ascii, .col_output {
+  align-self: stretch;
+}
+
+/* Output column styling */
+.col_output {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-row {
+  flex: 1;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.image-row:last-child {
+  margin-bottom: 0;
+}
+
+.image-row img {
+  flex: 1;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block; /* Ensure image is block-level */
+  margin: 0 auto; /* Center image horizontally */
+}
+
+#jpeg-div {
+  width: 128px;
+  height: 128px;
+  display: flex;
+  align-items: center;
+}
+
+#png {
+  width: 512px;
+  height: 512px;
+  margin: 0 auto;
+}
+
+.image-row .button-container {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.image-row button {
+  padding: 10px 20px;
+  background-color: #bb86fc;
+  color: #000000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.image-row button:hover {
+  background-color: #a675e1;
+}
