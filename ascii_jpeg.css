@@ -130,7 +130,6 @@ input[type="radio"]:checked + label.option-label {
 }
 
 .box select {
-  width: 60px;
   background-color: #2e2e2e;
   color: #e0e0e0;
   border: 1px solid #555555;

@@ -3,241 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <title>ascii.jpeg</title>
-<style>
-  /* Dark mode styles */
-  body {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: monospace;
-  }
-
-  /* Container */
-  .container {
-    display: flex;
-    align-items: flex-start;
-  }
-
-  .box {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #333333;
-    border-radius: 4px;
-    background-color: #1e1e1e;
-  }
-
-  .box span {
-    font-weight: bold;
-    color: #bb86fc;
-  }
-
-  .box:last-child {
-    margin-bottom: 0;
-  }
-
-
-  /*** TITLES ***/
-  .title {
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
-    border-radius: 4px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .title h3 {
-    margin-top: 0;
-    margin-bottom: 0;
-    color: #bb86fc;
-  }
-
-
-  /*** HEADERS ***/
-  .col_headers {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Hide the radio buttons */
-  .col_headers input[type="radio"] {
-    display: none;
-  }
-
-
-  /*** ASCII ***/
-  .col_ascii {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: 20px;
-    margin-right: 20px;
-  }
-
-  /* Output column */
-  .col_output {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Style the labels to look like buttons */
-  label.option-label {
-    display: inline-block;
-    padding: 10px 10px;
-    margin: 5px;
-    border: 2px solid #bb86fc;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s;
-    color: #e0e0e0;
-  }
-
-  /* Change background on hover */
-  label.option-label:hover {
-    background-color: #2f2f2f;
-  }
-
-  /* Style the selected label */
-  input[type="radio"]:checked + label.option-label {
-    background-color: #bb86fc;
-    color: #000000;
-  }
-
-  /* Component styles */
-  .component {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #333333;
-    border-radius: 4px;
-    background-color: #1e1e1e;
-  }
-
-  .component.disabled {
-    opacity: 0.5;
-  }
-
-  .component table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .component th, .component td {
-    padding: 5px;
-    text-align: center;
-  }
-
-  .component th {
-    font-weight: bold;
-    color: #bb86fc;
-  }
-
-  .component select {
-    width: 60px;
-    background-color: #2e2e2e;
-    color: #e0e0e0;
-    border: 1px solid #555555;
-    border-radius: 4px;
-    padding: 2px;
-  }
-
-  /* Textarea in the middle column */
-  .col_ascii textarea {
-    flex: 1;
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
-    border-radius: 4px;
-    padding: 10px;
-    resize: none;
-    color: #e0e0e0;
-  }
-
-  /* Status line */
-  #status {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #cf6679;
-  }
-
-  /* Ensure columns stretch equally */
-  .col_headers, .col_ascii, .col_output {
-    align-self: stretch;
-  }
-
-  /* Output column styling */
-  .col_output {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .image-row {
-    flex: 1;
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
-    border-radius: 4px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .image-row:last-child {
-    margin-bottom: 0;
-  }
-
-  .image-row img {
-    flex: 1;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block; /* Ensure image is block-level */
-    margin: 0 auto; /* Center image horizontally */
-  }
-
-  #jpeg-div {
-    width: 128px;
-    height: 128px;
-    display: flex;
-    align-items: center;
-  }
-
-  #png {
-    width: 512px;
-    height: 512px;
-    margin: 0 auto;
-  }
-
-  .image-row .button-container {
-    text-align: center;
-    margin-top: 10px;
-  }
-
-  .image-row button {
-    padding: 10px 20px;
-    background-color: #bb86fc;
-    color: #000000;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .image-row button:hover {
-    background-color: #a675e1;
-  }
-
-</style>
+<link rel="stylesheet" href="ascii_jpeg.css">
 </head>
 <body>
-
 <div class="container">
-  <!-- Headers -->
+  <!-- jpeg headers -->
   <div class="col_headers">
     <div class="title">
-      <h3>headers</h3>
+      <h3>jpeg headers</h3>
     </div>
 
     <!-- Image Sizes -->
@@ -252,9 +25,20 @@
       </div>
       <div id="components"></div>
     </div>
+
+    <!-- Presets -->
+    <div class="box" id="presets">
+      <span>Presets:</span>
+    </div>
+
+    <!-- Texts -->
+    <div class="box" id="texts">
+      <span>Texts:</span>
+    </div>
   </div>
 
-  <!-- ASCII -->
+
+  <!-- ascii -->
   <div class="col_ascii">
     <div class="title">
       <h3>ascii</h3>
@@ -264,7 +48,8 @@
     <textarea id="textbox"></textarea>
   </div>
 
-  <!-- Output -->
+
+  <!-- output -->
   <div class="col_output">
     <div class="title">
       <h3>ascii.jpeg</h3>
@@ -277,6 +62,9 @@
       </div>
       <div class="button-container">
         <button id="download-jpeg">Download ascii.jpeg</button>
+      </div>
+      <div class="button-container">
+        <button id="download-txt">Download jpeg.txt</button>
       </div>
     </div>
 
@@ -294,202 +82,179 @@
 <div id="status"></div>
 
 <!-- Include ascii_jpeg.js -->
+<script src="fflate-only.min.js"></script>
+<script src="transliteration.min.js"></script>
+<script src="ascii_text.js"></script>
 <script src="ascii_jpeg.js"></script>
 
 <script>
-  /* Helper function to generate options from min to max with selected value */
-  function generateOptions(min, max, selectedValue) {
-    let options = '';
-    for (let i = min; i <= max; i++) {
-      options += `<option value="${i}"${i === selectedValue ? ' selected' : ''}>${i}</option>`;
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  function deflate(text)
+  {
+    try {
+      const input = encoder.encode(text);
+      return fflate.deflateSync(input);
+    } catch {
+      return false;
     }
-    return options;
   }
 
+  function inflate(compressed)
+  {
+    try {
+      const output = fflate.inflateSync(compressed);
+      return decoder.decode(output);
+    } catch {
+      return false;
+    }
+  }
+
+  function compress_to_uri(text)
+  {
+    try {
+      const compressed = deflate(text);
+      if (!compressed)
+        return false;
+      let str = '';
+      for (let b of compressed)
+        str += String.fromCharCode(b);
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    } catch {
+      return false;
+    }
+  }
+
+  function decompress_from_uri(b64)
+  {
+    try {
+      b64 = b64.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4)
+        b64 += '=';
+      const binary = atob(b64);
+      const compressed = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++)
+        compressed[i] = binary.charCodeAt(i);
+      return inflate(compressed);
+    } catch {
+      return false;
+    }
+  }
+</script>
+
+<script>
   /* JavaScript to enable/disable components and handle updates */
   document.addEventListener('DOMContentLoaded', function() {
+    const default_image_size = "16x16";
+    const default_pixfmt = "YUV444";
+    const default_dc_dht = "[1] skip";
+    const default_ac_dht = "[1] 1-6 lsbs";
+    const default_preset = "none";
+    const default_text = "ne_me_quitte_pas";
+
+    let div, html;
+
     /* Image Sizes */
-    const div_image_sizes = document.getElementById("image-sizes");
-    const image_size_values = [ 8, 16, 32, 64, 128 ];
-    const default_image_size = 16;
-    for ( value of image_size_values )
-    {
-      const name = `${value}x${value}`;
-      const id = `size${name}`;
-
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.id   = id;
-      input.name = "image_size";
-      input.addEventListener("change", update);
-      if ( value == default_image_size )
-        input.checked = true;
-      div_image_sizes.appendChild(input);
-
-      const label = document.createElement("label");
-      label.className = "option-label";
-      label.htmlFor   = id;
-      label.innerText = name;
-      div_image_sizes.appendChild(label);
+    html = "";
+    for (const name in image_size_values) {
+      html += `<input type="radio" id="${name}" name="image_size" ${name === default_image_size ? 'checked' : ''}>`;
+      html += `<label class="option-label" for="${name}">${name}</label>`;
     }
+    div = document.getElementById("image-sizes");
+    div.insertAdjacentHTML("beforeend", html);
+    div.querySelectorAll('input[name="image_size"]').forEach(input => {
+      input.addEventListener("change", update);
+    });
 
     /* Pixel Formats */
-    const div_pixel_formats_list = document.getElementById("pixel-formats-list");
-    const color_mode_values = [
-      "Grayscale",
-      "YUV444",
-      "YUV422",
-      "YUV420",
-    ];
-    const default_color_mode = "YUV444";
-    for ( const value of color_mode_values )
-    {
-      const name = value;
-      const id = name.toLowerCase();
-
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.id   = id;
-      input.name = "color_mode";
-      input.addEventListener("change", updateComponents);
-      if ( value == default_color_mode )
-        input.checked = true;
-      div_pixel_formats_list.appendChild(input);
-
-      const label = document.createElement("label");
-      label.className = "option-label";
-      label.htmlFor   = id;
-      label.innerText = name;
-      div_pixel_formats_list.appendChild(label);
+    html = "";
+    for (const name in pixfmt_values) {
+      html += `<input type="radio" id="${name}" name="pixfmt" ${name === default_pixfmt ? 'checked' : ''}>`;
+      html += `<label class="option-label" for="${name}">${name}</label>`;
     }
+    div = document.getElementById("pixel-formats-list");
+    div.insertAdjacentHTML("beforeend", html);
+    div.querySelectorAll('input[name="pixfmt"]').forEach(input => {
+      input.addEventListener("change", updateComponents);
+    });
 
     /* Components */
-    const div_components = document.getElementById("components");
-    let components = [];
-    for ( let i = 0; i < 3; i++ )
-    {
-      const id = `component${i + 1}`;
-
-      const component = document.createElement("div");
-//      component.classList.add("box", "component");
-      component.className = "component";
-      component.id        = id;
-      components.push(component);
-      div_components.appendChild(component);
-
-      const table = document.createElement("table");
-
+    html = "";
+    for (let i = 0; i < 3; i++) {
+      html += `<div class="component" id="component${i + 1}">`;
+      html += "  <table>";
       /* Labels */
-      let th, td, input, select, option;
-      {
-        const tr = document.createElement("tr");
-        th = document.createElement("th");
-        th.innerText = `Component #${i + 1}`;
-        tr.appendChild(th);
-        th = document.createElement("th");
-        th.innerText = "DC";
-        tr.appendChild(th);
-        th = document.createElement("th");
-        th.innerText = "AC";
-        tr.appendChild(th);
-        table.appendChild(tr);
-      }
-
-      /* Quantization */
-      {
-        const tr = document.createElement("tr");
-        td = document.createElement("td");
-        td.innerText = "Quantization:";
-        tr.appendChild(td);
-        td = document.createElement("td");
-        input = document.createElement("input");
-        input.name = `quant_dc_${i + 1}`;
-        input.type = "range";
-        input.value = 1;
-        input.min = 1;
-        input.max = 255;
-        td.appendChild(input);
-        tr.appendChild(td);
-        td = document.createElement("td");
-        input = document.createElement("input");
-        input.name = `quant_ac_${i + 1}`;
-        input.type = "range";
-        input.value = 4;
-        input.min = 1;
-        input.max = 255;
-        td.appendChild(input);
-        tr.appendChild(td);
-        table.appendChild(tr);
-      }
-
+      html += "    <tr>";
+      html += `      <th>Component #${i + 1}</th>`;
+      html += "      <th>DC</th>";
+      html += "      <th>AC</th>";
+      html += "    </tr>";
       /* Huffman */
-      {
-        const huff_values = [
-          "skip",
-          "1 bit",
-          "2 bits",
-          "3 bits",
-          "4 bits",
-          "5 bits",
-          "6 bits",
-          "7 bits",
-          "full range",
-          "2 bytes",
-          "min4",
-        ];
-
-        const tr = document.createElement("tr");
-        td = document.createElement("td");
-        td.innerText = "Huffman:";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        select = document.createElement("select");
-        select.name = `huff_dc_${i + 1}`;
-        for ( const j in huff_values )
-        {
-          option = document.createElement("option");
-          option.value = j;
-          option.innerText = huff_values[j];
-          if ( j == 0 )
-            option.selected = true;
-          select.appendChild(option);
-        }
-        td.appendChild(select);
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        select = document.createElement("select");
-        select.name = `huff_ac_${i + 1}`;
-        for ( const j in huff_values )
-        {
-          option = document.createElement("option");
-          option.value = j;
-          option.innerText = huff_values[j];
-          if ( j == 8 )
-            option.selected = true;
-          select.appendChild(option);
-        }
-        td.appendChild(select);
-        tr.appendChild(td);
-
-        table.appendChild(tr);
+      let dc_dht_options = "";
+      let ac_dht_options = "";
+      for (const name in dht_values) {
+        dc_dht_options += `<option value="${name}" ${name === default_dc_dht ? 'selected' : ''}>${name}</option>`;
+        ac_dht_options += `<option value="${name}" ${name === default_ac_dht ? 'selected' : ''}>${name}</option>`;
       }
-
-      component.appendChild(table);
+      html += "    <tr>";
+      html += "      <td>Huffman:</td>";
+      html += `      <td><select name="huff_dc_${i + 1}">${dc_dht_options}"</select></td>`;
+      html += `      <td><select name="huff_ac_${i + 1}">${ac_dht_options}"</select></td>`;
+      html += "    </tr>";
+      html += "  </table>";
+      html += "</div>";
     }
+    div = document.getElementById("components");
+    div.insertAdjacentHTML("beforeend", html);
+    const components = div.querySelectorAll('div[id^="component"]');
+
+    /* Presets */
+    html = "";
+    let preset_options = "";
+    for (const name in preset_values)
+      preset_options += `<option value="${name}" ${name === default_preset ? 'selected' : ''}>${name}</option>`;
+    html += `<select name='preset'>${preset_options}</select>`;
+    div = document.getElementById("presets");
+    div.insertAdjacentHTML("beforeend", html);
+    div.querySelector('select[name="preset"]').addEventListener('change', (e) => {
+      const cur_preset = preset_values[e.target.value];
+      if (cur_preset) {
+        document.querySelectorAll('select[name^="huff_dc"]').forEach(huff_dc => { huff_dc.value = cur_preset[0]; });
+        document.querySelectorAll('select[name^="huff_ac"]').forEach(huff_ac => { huff_ac.value = cur_preset[1]; });
+        update();
+      }
+    });
+
+    const textarea = document.getElementById('textbox');
+
+    /* Texts */
+    html = "";
+    let text_options = "";
+    for (const name in text_values)
+      text_options += `<option value="${name}" ${name === default_text ? 'selected' : ''}>${name}</option>`;
+    html += `<select name='text'>${text_options}</select>`;
+    div = document.getElementById("texts");
+    div.insertAdjacentHTML("beforeend", html);
+    div.querySelector('select[name="text"]').addEventListener('change', (e) => {
+      const cur_text = text_values[e.target.value];
+      if (cur_text) {
+        textarea.value = cur_text;
+        update();
+      }
+    });
 
     const statusLine = document.getElementById('status');
-    const textarea = document.getElementById('textbox');
     const jpegImage = document.getElementById('jpeg');
     const pngImage = document.getElementById('png');
 
     /* Set default ASCII content after ascii_jpeg.js is loaded */
     textarea.value = default_ascii;
 
-    function updateComponents() {
-      const selectedMode = document.querySelector('input[name="color_mode"]:checked').id;
-      if (selectedMode === 'grayscale') {
+    function updateComponents(e)
+    {
+      const selectedMode = document.querySelector('input[name="pixfmt"]:checked').id;
+      if (selectedMode === "Grayscale") {
         enableComponent(1);
         disableComponent(2);
         disableComponent(3);
@@ -498,27 +263,32 @@
         enableComponent(2);
         enableComponent(3);
       }
-      update(); /* Call update() after components have been updated */
+      update();
     }
 
-    function enableComponent(num) {
+    function enableComponent(num)
+    {
       components[num - 1].classList.remove('disabled');
       components[num - 1].querySelectorAll('select').forEach(el => {
         el.disabled = false;
       });
     }
 
-    function disableComponent(num) {
+    function disableComponent(num)
+    {
       components[num - 1].classList.add('disabled');
       components[num - 1].querySelectorAll('select').forEach(el => {
         el.disabled = true;
       });
     }
 
+if ( 0 )
+{
     /* Attach event listeners to Quantization selects */
     document.querySelectorAll('input[name^="quant_dc_"], input[name^="quant_ac_"]').forEach(select => {
       select.addEventListener('change', update);
     });
+}
 
     /* Attach event listeners to Huffman selects */
     document.querySelectorAll('select[name^="huff_dc_"], select[name^="huff_ac_"]').forEach(select => {
@@ -547,7 +317,7 @@
       statusLine.textContent = '';
 
       /* Get colorspace */
-      const colorspace = document.querySelector('input[name="color_mode"]:checked + label').textContent;
+      const colorspace = document.querySelector('input[name="pixfmt"]:checked + label').textContent;
 
       /* Get image size */
       const imageSize = getImageSize();
@@ -558,28 +328,31 @@
       /* Get values from enabled components */
       const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
       for (const component of enabledComponents) {
+if ( 0 )
+{
         const quant_dc_select = component.querySelector('input[name^="quant_dc_"]');
         const quant_ac_select = component.querySelector('input[name^="quant_ac_"]');
+        const quant_dc = quant_dc_select.value;
+        const quant_ac = quant_ac_select.value;
+}
+
         const huff_dc_select = component.querySelector('select[name^="huff_dc_"]');
         const huff_ac_select = component.querySelector('select[name^="huff_ac_"]');
-
-        const quant_dc = parseInt(quant_dc_select.value);
-        const quant_ac = parseInt(quant_ac_select.value);
-        const huff_dc = parseInt(huff_dc_select.value);
-        const huff_ac = parseInt(huff_ac_select.value);
+        const huff_dc = huff_dc_select.value;
+        const huff_ac = huff_ac_select.value;
 
         /* Add component values as a subarray */
+if ( 0 ) {
         componentsArray.push([quant_dc, quant_ac, huff_dc, huff_ac]);
+} else {
+        componentsArray.push([0, 0, huff_dc, huff_ac]);
+}
       }
 
       /* Get ASCII content from textarea */
-      const ascii = textarea.value;
-
-      /* Check that the textbox content only has printable ASCII characters and whitespace */
-      const asciiRegex = /^[\x20-\x7E\r\n\t]*$/;
-      if (!asciiRegex.test(ascii)) {
-        statusLine.textContent = 'Error: Textbox content must contain only printable ASCII characters.';
-        return;
+      const ascii = transliterate(textarea.value);
+      if (ascii != textarea.value) {
+        statusLine.textContent = "Warning: non-ascii characters have been transliterated to ascii.";
       }
 
       /* Call ascii_jpeg() with the parameters */
@@ -588,6 +361,14 @@
       /* Update the image dimensions */
       jpegImage.width = imageSize;
       jpegImage.height = imageSize;
+
+      const apfelstrudel_fflate = compress_to_uri(ascii);
+      console.log(apfelstrudel_fflate);
+      console.log("fflate", ascii.length, apfelstrudel_fflate.length);
+      const blabliblu = decompress_from_uri(apfelstrudel_fflate);
+      if (!blabliblu)
+        console.log("oopsie");
+      console.log(ascii == blabliblu);
     }
 
     /* Handle Download JPEG button */
@@ -606,10 +387,26 @@
       }
     });
 
+    /* Handle Download TXT button */
+    const downloadTxtButton = document.getElementById('download-txt');
+
+    downloadTxtButton.addEventListener('click', function() {
+      if (window.txt_blob) {
+        const blob_url = URL.createObjectURL(window.txt_blob);
+        window.open(blob_url, "jpeg.txt");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        statusLine.textContent = 'Error: No TXT data available to download.';
+      }
+    });
+
     /* Handle Download Baked image button */
     const downloadPngButton = document.getElementById('download-png');
 
-    downloadPngButton.addEventListener('click', function() {
+    downloadPngButton.addEventListener('click', function()
+    {
       if (window.png_blob) {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(window.png_blob);
@@ -629,3 +426,4 @@
 
 </body>
 </html>
+
