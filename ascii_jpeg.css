@@ -129,6 +129,10 @@ input[type="radio"]:checked + label.option-label {
   color: #bb86fc;
 }
 
+.component input {
+  text-align: right;
+}
+
 .box select {
   background-color: #2e2e2e;
   color: #e0e0e0;

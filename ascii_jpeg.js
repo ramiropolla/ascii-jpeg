@@ -8,18 +8,28 @@ const image_size_values = {
   "64x64":   { width:  64, height:  64 },
   "128x128": { width: 128, height: 128 },
 };
+
+// convert:
+// 444: subsampling = [ 0x11, 0x11, 0x11 ];
+// 422: subsampling = [ 0x21, 0x11, 0x11 ];
+// 420: subsampling = [ 0x22, 0x11, 0x11 ];
+// ffmpeg:
+// 444: subsampling = [ 0x12, 0x12, 0x12 ];
+// 422: subsampling = [ 0x22, 0x12, 0x12 ];
+// 420: subsampling = [ 0x22, 0x11, 0x11 ];
 const pixfmt_values = {
   "Grayscale": [ 0x11 ],
   "YUV444":    [ 0x11, 0x11, 0x11 ],
   "YUV422":    [ 0x22, 0x12, 0x12 ],
   "YUV420":    [ 0x22, 0x11, 0x11 ],
 };
+
 const fill_with_zeros = false;
 const l7 = fill_with_zeros ? 127 : 0;
 
 function n_bits(nb_xbits)
 {
-  const quant = (128 >> nb_xbits);
+  const quant = nb_xbits ? (128 >> nb_xbits) : 1;
   const count = (128 >> nb_xbits);
   const lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, l7, 0, 0, 0, 0, 0, 0, 0, 0]);
   const symbols = new Uint8Array(count + l7).fill(nb_xbits, 0, count);
@@ -29,7 +39,7 @@ function n_bits(nb_xbits)
 
 function run_n_bits(nb_xbits)
 {
-  const quant = (255 >> nb_xbits);
+  const quant = (256 >> nb_xbits);
   const count = (127 >> nb_xbits);
   const count7 = 127 - (count << nb_xbits);
   const lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -45,14 +55,14 @@ function run_n_bits(nb_xbits)
 
 const dht_values = {
   "[1] skip":   n_bits(0), // 0xxxxxxx
-  "[1] 1 lsb":  n_bits(1), // 0xxxxxxV -1, 1
-  "[1] 2 lsbs": n_bits(2), // 0xxxxxVV -3..-2, 2..3
-  "[1] 3 lsbs": n_bits(3), // 0xxxxVVV -7..-4, 4..7
-  "[1] 4 lsbs": n_bits(4), // 0xxxVVVV -15..-8, 8..15
-  "[1] 5 lsbs": n_bits(5), // 0xxVVVVV -31..-16, 16..31
-  "[1] 6 lsbs": n_bits(6), // 0xVVVVVV -63..-32, 32..63
-  "[1] 7 lsbs": n_bits(7), // 0VVVVVVV -127..-64, 64..127
-  "[1] 1-6 lsbs": (() => {
+  "[1] 1 bit":  n_bits(1), // 0xxxxxxV -1, 1
+  "[1] 2 bits": n_bits(2), // 0xxxxxVV -3..-2, 2..3
+  "[1] 3 bits": n_bits(3), // 0xxxxVVV -7..-4, 4..7
+  "[1] 4 bits": n_bits(4), // 0xxxVVVV -15..-8, 8..15
+  "[1] 5 bits": n_bits(5), // 0xxVVVVV -31..-16, 16..31
+  "[1] 6 bits": n_bits(6), // 0xVVVVVV -63..-32, 32..63
+  "[1] 7 bits": n_bits(7), // 0VVVVVVV -127..-64, 64..127
+  "[1] 1-6 bits": (() => {
     // full range
     // 00VVVVVV -63..-32, 32..63
     // 010VVVVV -31..-16, 16..31
@@ -74,10 +84,10 @@ const dht_values = {
     symbols[6] = 1;
     return { suggested_quant: quant, lengths: lengths, symbols: symbols };
   })(),
-  "[1] run + 1 lsb":  run_n_bits(1),
-  "[1] run + 2 lsbs": run_n_bits(2),
-  "[1] run + 3 lsbs": run_n_bits(3),
-  "[1] run + 4 lsbs": run_n_bits(4),
+  "[1] run + 1 bit":  run_n_bits(1),
+  "[1] run + 2 bits": run_n_bits(2),
+  "[1] run + 3 bits": run_n_bits(3),
+  "[1] run + 4 bits": run_n_bits(4),
 
   "[1] word blocks": (() => {
     // 0000     -> EOB control codes (includes CR LF)
@@ -165,7 +175,7 @@ const dht_values = {
     return { suggested_quant: quant, lengths: lengths, symbols: symbols };
   })(),
 
-  "[2] skip 8 + 8 lsbs": (() => {
+  "[2] skip 8 + 8 bits": (() => {
     // every 2 bytes are (ignored) + (8 bits),
     // except for a few values which are EOB.
     const quant = 2;
@@ -217,39 +227,46 @@ const dht_values = {
     // symbols[0x5A] = 0; // Z
     return { suggested_quant: quant, lengths: lengths, symbols: symbols };
   })(),
+  "[2] skip 8 + 8 bits (lines)": (() => {
+    // every 2 bytes are (ignored) + (8 bits),
+    // except for a few values which are EOB.
+    const quant = 2;
+    const lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const symbols = new Uint8Array(128).fill(8);
+    symbols[0x0A] = 0; // \n
+    symbols[0x0D] = 0; // \r
+    return { suggested_quant: quant, lengths: lengths, symbols: symbols };
+  })(),
+  "[2] skip 8 + 8 bits (words)": (() => {
+    // every 2 bytes are (ignored) + (8 bits),
+    // except for a few values which are EOB.
+    const quant = 2;
+    const lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const symbols = new Uint8Array(128).fill(8);
+    symbols[0x20] = 0; // SPACE
+    return { suggested_quant: quant, lengths: lengths, symbols: symbols };
+  })(),
 };
 
 const preset_values = {
-  // "[1] skip"
-  // "[1] 1 lsb"
-  // "[1] 2 lsbs"
-  // "[1] 3 lsbs"
-  // "[1] 4 lsbs"
-  // "[1] 5 lsbs"
-  // "[1] 6 lsbs"
-  // "[1] 7 lsbs"
-  // "[1] 1-6 lsbs"
-  // "[1] run + 1 lsb"
-  // "[1] run + 2 lsbs"
-  // "[1] run + 3 lsbs"
-  // "[1] run + 4 lsbs"
-  // "[1] word blocks"
-  // "[1] line blocks"
-  // "[2] skip 8 + 8 lsbs"
-  "none": null,
-  "skip DC | full range AC": [ "[1] skip", "[1] 1-6 lsbs" ],
-  "skip DC | run + 3 lsbs": [ "[1] skip", "[1] run + 3 lsbs" ],
-  "full range DC | skip AC": [ "[1] 1-6 lsbs", "[1] skip" ],
-  "word blocks": [ "[1] word blocks", "[1] word blocks" ],
-  "line blocks": [ "[1] line blocks", "[1] line blocks" ],
-  "2 chars": [ "[2] skip 8 + 8 lsbs", "[2] skip 8 + 8 lsbs" ],
+  "skip DC | full range AC":   [ "[1] skip",                    "[1] 1-6 bits"                ],
+  "skip DC | run + 3 bits":    [ "[1] skip",                    "[1] run + 3 bits"            ],
+  "full range DC | skip AC":   [ "[1] 1-6 bits",                "[1] skip"                    ],
+  "word blocks":               [ "[1] word blocks",             "[1] word blocks"             ],
+  "line blocks":               [ "[1] line blocks",             "[1] line blocks"             ],
+  "2 chars":                   [ "[2] skip 8 + 8 bits",         "[2] skip 8 + 8 bits"         ],
+  "2 chars (lines)":           [ "[2] skip 8 + 8 bits (lines)", "[2] skip 8 + 8 bits (lines)" ],
+  "2 chars (words)":           [ "[2] skip 8 + 8 bits (words)", "[2] skip 8 + 8 bits (words)" ],
+  "skip DC | 2 chars":         [ "[1] skip",                    "[2] skip 8 + 8 bits"         ],
+  "skip DC | 2 chars (lines)": [ "[1] skip",                    "[2] skip 8 + 8 bits (lines)" ],
+  "skip DC | 2 chars (words)": [ "[1] skip",                    "[2] skip 8 + 8 bits (words)" ],
 };
 
 const text_values = {
-  "lorem_ipsum":         lorem_ipsum,
-  "ne_me_quitte_pas":    ne_me_quitte_pas,
-  "poema_de_sete_faces": poema_de_sete_faces,
-  "faroeste_caboclo":    faroeste_caboclo,
+  "Lorem Ipsum":         lorem_ipsum,
+  "Ne Me Quitte Pas":    ne_me_quitte_pas,
+  "Poema de Sete Faces": poema_de_sete_faces,
+  "Faroeste Caboclo":    faroeste_caboclo,
 };
 
 class JpegFile {
@@ -492,7 +509,6 @@ function to_ascii_char(ascii_val)
   case 0x0D: return '\\r';
   }
   return '\\x' + ascii_val.toString(16).toUpperCase().padStart(2, '0');
-  // return '\\o' + ascii_val.toString(8).padStart(3, '0');
 }
 
 function dump_dht(str, lengths, symbols)
@@ -569,31 +585,11 @@ function dump_dht(str, lengths, symbols)
   // console.log(str, codes);
 }
 
-function generateJPEG(colorspace, width, height, components, ascii_data)
+function generateJPEG(width, height, components, ascii_data)
 {
-  let subsampling;
-  // convert:
-  // 444: subsampling = [ 0x11, 0x11, 0x11 ];
-  // 422: subsampling = [ 0x21, 0x11, 0x11 ];
-  // 420: subsampling = [ 0x22, 0x11, 0x11 ];
-  // ffmpeg:
-  // 444: subsampling = [ 0x12, 0x12, 0x12 ];
-  // 422: subsampling = [ 0x22, 0x12, 0x12 ];
-  // 420: subsampling = [ 0x22, 0x11, 0x11 ];
-  switch (colorspace) {
-    case "Grayscale":
-      subsampling = [ 0x11 ];
-      break;
-    case "YUV444":
-      subsampling = [ 0x11, 0x11, 0x11 ];
-      break;
-    case "YUV422":
-      subsampling = [ 0x22, 0x12, 0x12 ];
-      break;
-    case "YUV420":
-      subsampling = [ 0x22, 0x11, 0x11 ];
-      break;
-  }
+  console.log(components);
+
+  const nb_components = components.length;
 
   const jpeg_file = new JpegFile();
 
@@ -603,53 +599,26 @@ function generateJPEG(colorspace, width, height, components, ascii_data)
   // COM marker
   jpeg_file.append_marker(0xFFFE, comment_data);
 
-  const nb_components = components.length;
-
-  // Component params
-  let component_params = [];
-  for (let i = 0; i < nb_components; i++) {
-    const dc_params = dht_values[components[i][2]];
-    const ac_params = dht_values[components[i][3]];
-    component_params[i] = [
-      dc_params.suggested_quant,
-      ac_params.suggested_quant,
-      dc_params,
-      ac_params,
-    ];
-  }
-
   // DQT (Define Quantization Table)
   for (let i = 0; i < nb_components; i++) {
-    const quant_dc = component_params[i][0];
-    const quant_ac = component_params[i][1];
     const dqt_data = new Uint8Array(65);
-
-    // Precision and table ID
-    dqt_data[0] = i;
-    // Set DC value
-    dqt_data[1] = quant_dc;
-    // Fill with AC value
-    dqt_data.fill(quant_ac, 2);
-
+    dqt_data[0] = i;                    // Precision and table ID
+    dqt_data.set(components[i].dqt, 1); // DQT values (DC + 63 AC)
     jpeg_file.append_marker(0xFFDB, dqt_data);
   }
 
   // DHT (Define Huffman Table)
   for (let i = 0; i < nb_components; i++) {
     // DC table
-    const dc_lengths = component_params[i][2].lengths;
-    const dc_symbols = component_params[i][2].symbols;
+    const dc_lengths = components[i].dht_dc.lengths;
+    const dc_symbols = components[i].dht_dc.symbols;
     // dump_dht(`[${i}.dc]`, dc_lengths, dc_symbols);
-    if (!dc_lengths)
-        return null;
     jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x00 | i]), dc_lengths, dc_symbols);
 
     // AC table
-    const ac_lengths = component_params[i][3].lengths;
-    const ac_symbols = component_params[i][3].symbols;
-    dump_dht(`[${i}.ac]`, ac_lengths, ac_symbols);
-    if (!ac_lengths)
-        return null;
+    const ac_lengths = components[i].dht_ac.lengths;
+    const ac_symbols = components[i].dht_ac.symbols;
+    // dump_dht(`[${i}.ac]`, ac_lengths, ac_symbols);
     jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x10 | i]), ac_lengths, ac_symbols);
   }
 
@@ -663,9 +632,10 @@ function generateJPEG(colorspace, width, height, components, ascii_data)
   sof_data[4] = width;
   sof_data[5] = nb_components;  // Number of components
   for (let i = 0; i < nb_components; i++) {
-    sof_data[6 + (i * 3)] = 1 + i;          // Component identifier
-    sof_data[7 + (i * 3)] = subsampling[i]; // Subsampling factors
-    sof_data[8 + (i * 3)] = i;              // Quantization table index
+    const subsampling = components[i].subsampling;
+    sof_data[6 + (i * 3)] = 1 + i;        // Component identifier
+    sof_data[7 + (i * 3)] = subsampling;  // Subsampling factors
+    sof_data[8 + (i * 3)] = i;            // Quantization table index
   }
   jpeg_file.append_marker(0xFFC0, sof_data);
 
@@ -693,9 +663,10 @@ function generateJPEG(colorspace, width, height, components, ascii_data)
   return jpeg_file.generate();
 }
 
-function ascii_jpeg(colorspace, components, ascii, width, height) {
+function ascii_jpeg(components, ascii, width, height)
+{
   // Generate the JPEG data
-  const jpegData = generateJPEG(colorspace, width, height, components, ascii);
+  const jpegData = generateJPEG(width, height, components, ascii);
 
   if (jpegData) {
     // Create a Blob and set the src of the image

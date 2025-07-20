@@ -12,12 +12,10 @@
     <div class="title">
       <h3>jpeg headers</h3>
     </div>
-
     <!-- Image Sizes -->
     <div class="box" id="image-sizes">
       <span>Size:</span>
     </div>
-
     <!-- Pixel Formats -->
     <div class="box" id="pixel-formats">
       <div id="pixel-formats-list">
@@ -25,36 +23,30 @@
       </div>
       <div id="components"></div>
     </div>
-
     <!-- Presets -->
     <div class="box" id="presets">
       <span>Presets:</span>
     </div>
-
     <!-- Texts -->
     <div class="box" id="texts">
       <span>Texts:</span>
     </div>
   </div>
 
-
   <!-- ascii -->
   <div class="col_ascii">
     <div class="title">
       <h3>ascii</h3>
     </div>
-
     <!-- ascii text -->
     <textarea id="textbox"></textarea>
   </div>
-
 
   <!-- output -->
   <div class="col_output">
     <div class="title">
       <h3>ascii.jpeg</h3>
     </div>
-
     <!-- ascii.jpeg -->
     <div class="image-row">
       <div id="jpeg-div">
@@ -62,12 +54,10 @@
       </div>
       <div class="button-container">
         <button id="download-jpeg">Download ascii.jpeg</button>
-      </div>
-      <div class="button-container">
         <button id="download-txt">Download jpeg.txt</button>
+        <button id="open-txt">Open jpeg.txt</button>
       </div>
     </div>
-
     <!-- baked.png -->
     <div class="image-row">
       <img id="png" src="" alt="baked.png">
@@ -81,13 +71,16 @@
 <!-- Status Line -->
 <div id="status"></div>
 
-<!-- Include ascii_jpeg.js -->
 <script src="fflate-only.min.js"></script>
 <script src="transliteration.min.js"></script>
 <script src="ascii_text.js"></script>
 <script src="ascii_jpeg.js"></script>
-
 <script>
+  const default_image_size = "16x16";
+  const default_pixfmt = "YUV444";
+  const default_preset = "skip DC | full range AC";
+  const default_text   = "ne_me_quitte_pas";
+
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
@@ -117,10 +110,10 @@
       const compressed = deflate(text);
       if (!compressed)
         return false;
-      let str = '';
+      let str = "";
       for (let b of compressed)
         str += String.fromCharCode(b);
-      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, "");
     } catch {
       return false;
     }
@@ -141,48 +134,61 @@
       return false;
     }
   }
-</script>
 
-<script>
-  /* JavaScript to enable/disable components and handle updates */
-  document.addEventListener('DOMContentLoaded', function() {
-    const default_image_size = "16x16";
-    const default_pixfmt = "YUV444";
-    const default_dc_dht = "[1] skip";
-    const default_ac_dht = "[1] 1-6 lsbs";
-    const default_preset = "none";
-    const default_text = "ne_me_quitte_pas";
+  function download_blob(blob, name)
+  {
+    const blob_url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href     = blob_url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-    let div, html;
+  function open_blob(blob)
+  {
+    const blob_url = URL.createObjectURL(blob);
+    window.open(blob_url, "jpeg.txt");
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const textarea   = document.getElementById("textbox");
+    const statusLine = document.getElementById("status");
+    const jpegImage  = document.getElementById("jpeg");
+    const pngImage   = document.getElementById("png");
+
+    let html, div;
+
+    let dom_parameters = {};
 
     /* Image Sizes */
     html = "";
     for (const name in image_size_values) {
-      html += `<input type="radio" id="${name}" name="image_size" ${name === default_image_size ? 'checked' : ''}>`;
+      html += `<input type="radio" id="${name}" name="image_size"${name === default_image_size ? " checked" : ""}>`;
       html += `<label class="option-label" for="${name}">${name}</label>`;
     }
     div = document.getElementById("image-sizes");
     div.insertAdjacentHTML("beforeend", html);
-    div.querySelectorAll('input[name="image_size"]').forEach(input => {
-      input.addEventListener("change", update);
-    });
+    dom_parameters.image_size = Array.from(div.querySelectorAll("input[name='image_size']"));
 
     /* Pixel Formats */
     html = "";
     for (const name in pixfmt_values) {
-      html += `<input type="radio" id="${name}" name="pixfmt" ${name === default_pixfmt ? 'checked' : ''}>`;
+      html += `<input type="radio" id="${name}" name="pixfmt"${name === default_pixfmt ? " checked" : ""}>`;
       html += `<label class="option-label" for="${name}">${name}</label>`;
     }
     div = document.getElementById("pixel-formats-list");
     div.insertAdjacentHTML("beforeend", html);
-    div.querySelectorAll('input[name="pixfmt"]').forEach(input => {
-      input.addEventListener("change", updateComponents);
-    });
+    dom_parameters.pixfmt = Array.from(div.querySelectorAll("input[name='pixfmt']"));
 
     /* Components */
+    const default_preset_values = preset_values[default_preset];
+    const default_dc_dht = default_preset_values[0];
+    const default_ac_dht = default_preset_values[1];
     html = "";
     for (let i = 0; i < 3; i++) {
-      html += `<div class="component" id="component${i + 1}">`;
+      html += `<div class="component" id="component${i}">`;
       html += "  <table>";
       /* Labels */
       html += "    <tr>";
@@ -191,109 +197,118 @@
       html += "      <th>AC</th>";
       html += "    </tr>";
       /* Huffman */
-      let dc_dht_options = "";
-      let ac_dht_options = "";
+      let dc_huff_options = "";
+      let ac_huff_options = "";
       for (const name in dht_values) {
-        dc_dht_options += `<option value="${name}" ${name === default_dc_dht ? 'selected' : ''}>${name}</option>`;
-        ac_dht_options += `<option value="${name}" ${name === default_ac_dht ? 'selected' : ''}>${name}</option>`;
+        dc_huff_options += `<option value="${name}"${name === default_dc_dht ? " selected" : ""}>${name}</option>`;
+        ac_huff_options += `<option value="${name}"${name === default_ac_dht ? " selected" : ""}>${name}</option>`;
       }
       html += "    <tr>";
       html += "      <td>Huffman:</td>";
-      html += `      <td><select name="huff_dc_${i + 1}">${dc_dht_options}"</select></td>`;
-      html += `      <td><select name="huff_ac_${i + 1}">${ac_dht_options}"</select></td>`;
+      html += `      <td><select name="huff_dc_${i}">${dc_huff_options}"</select></td>`;
+      html += `      <td><select name="huff_ac_${i}">${ac_huff_options}"</select></td>`;
+      html += "    </tr>";
+      /* Quantization */
+      html += "    <tr>";
+      html += "      <td>Quantization:</td>";
+      html += `      <td><input type="number" min="1" max="255" name="quant_dc_${i}"></td>`;
+      html += `      <td><input type="number" min="1" max="255" name="quant_ac_${i}"></td>`;
       html += "    </tr>";
       html += "  </table>";
       html += "</div>";
     }
     div = document.getElementById("components");
     div.insertAdjacentHTML("beforeend", html);
-    const components = div.querySelectorAll('div[id^="component"]');
+    dom_parameters.components = Array.from(div.querySelectorAll('div[id^="component"]'));
+    dom_parameters.huff_dc    = Array.from(div.querySelectorAll('select[name^="huff_dc"]'));
+    dom_parameters.huff_ac    = Array.from(div.querySelectorAll('select[name^="huff_ac"]'));
+    dom_parameters.quant_dc   = Array.from(div.querySelectorAll('input[name^="quant_dc"]'));
+    dom_parameters.quant_ac   = Array.from(div.querySelectorAll('input[name^="quant_ac"]'));
 
     /* Presets */
     html = "";
     let preset_options = "";
     for (const name in preset_values)
-      preset_options += `<option value="${name}" ${name === default_preset ? 'selected' : ''}>${name}</option>`;
+      preset_options += `<option value="${name}" ${name === default_preset ? " selected" : ""}>${name}</option>`;
     html += `<select name='preset'>${preset_options}</select>`;
     div = document.getElementById("presets");
     div.insertAdjacentHTML("beforeend", html);
-    div.querySelector('select[name="preset"]').addEventListener('change', (e) => {
-      const cur_preset = preset_values[e.target.value];
-      if (cur_preset) {
-        document.querySelectorAll('select[name^="huff_dc"]').forEach(huff_dc => { huff_dc.value = cur_preset[0]; });
-        document.querySelectorAll('select[name^="huff_ac"]').forEach(huff_ac => { huff_ac.value = cur_preset[1]; });
-        update();
-      }
-    });
-
-    const textarea = document.getElementById('textbox');
+    dom_parameters.presets = div.querySelector('select[name="preset"]');
 
     /* Texts */
     html = "";
     let text_options = "";
     for (const name in text_values)
-      text_options += `<option value="${name}" ${name === default_text ? 'selected' : ''}>${name}</option>`;
+      text_options += `<option value="${name}" ${name === default_text ? " selected" : ""}>${name}</option>`;
     html += `<select name='text'>${text_options}</select>`;
     div = document.getElementById("texts");
     div.insertAdjacentHTML("beforeend", html);
-    div.querySelector('select[name="text"]').addEventListener('change', (e) => {
-      const cur_text = text_values[e.target.value];
-      if (cur_text) {
-        textarea.value = cur_text;
-        update();
-      }
-    });
+    dom_parameters.texts = div.querySelector('select[name="text"]');
 
-    const statusLine = document.getElementById('status');
-    const jpegImage = document.getElementById('jpeg');
-    const pngImage = document.getElementById('png');
+    dom_parameters.image_size.forEach(self => { self.addEventListener("change", update); });
+    dom_parameters.pixfmt    .forEach(self => { self.addEventListener("change", updateComponents); });
+    dom_parameters.huff_dc   .forEach(self => { self.addEventListener("change", updateHuff); });
+    dom_parameters.huff_ac   .forEach(self => { self.addEventListener("change", updateHuff); });
+    dom_parameters.quant_dc  .forEach(self => { self.addEventListener("change", updateQuant); });
+    dom_parameters.quant_ac  .forEach(self => { self.addEventListener("change", updateQuant); });
+    dom_parameters.presets.addEventListener("change", (e) => {
+      const cur_preset = preset_values[e.target.value];
+      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; updateHuffQuant(self); });
+      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; updateHuffQuant(self); });
+      update();
+    });
+    dom_parameters.texts.addEventListener("change", (e) => {
+      textarea.value = text_values[e.target.value];
+      update();
+    });
 
     /* Set default ASCII content after ascii_jpeg.js is loaded */
     textarea.value = default_ascii;
 
-    function updateComponents(e)
+    function updateQuant(e)
     {
-      const selectedMode = document.querySelector('input[name="pixfmt"]:checked').id;
-      if (selectedMode === "Grayscale") {
-        enableComponent(1);
-        disableComponent(2);
-        disableComponent(3);
-      } else {
-        enableComponent(1);
-        enableComponent(2);
-        enableComponent(3);
-      }
+      const input = e.target;
+      if (input.value < 0)
+        input.value = 1;
+      else if (input.value > 255)
+        input.value = 255;
       update();
     }
 
-    function enableComponent(num)
+    function updateHuffQuant(select)
     {
-      components[num - 1].classList.remove('disabled');
-      components[num - 1].querySelectorAll('select').forEach(el => {
-        el.disabled = false;
-      });
+      const split = select.name.split("_");
+      const is_dc = (split[1] === "dc");
+      const compn = parseInt(split[2]);
+      const cur_dht = dht_values[select.value];
+      const quant = cur_dht.suggested_quant;
+      if (is_dc)
+        dom_parameters.quant_dc[compn].value = quant;
+      else
+        dom_parameters.quant_ac[compn].value = quant;
     }
 
-    function disableComponent(num)
+    function updateHuff(e)
     {
-      components[num - 1].classList.add('disabled');
-      components[num - 1].querySelectorAll('select').forEach(el => {
-        el.disabled = true;
-      });
+      updateHuffQuant(e.target);
+      update();
     }
 
-if ( 0 )
-{
-    /* Attach event listeners to Quantization selects */
-    document.querySelectorAll('input[name^="quant_dc_"], input[name^="quant_ac_"]').forEach(select => {
-      select.addEventListener('change', update);
-    });
-}
-
-    /* Attach event listeners to Huffman selects */
-    document.querySelectorAll('select[name^="huff_dc_"], select[name^="huff_ac_"]').forEach(select => {
-      select.addEventListener('change', update);
-    });
+    function updateComponents()
+    {
+      const colorspace = dom_parameters.pixfmt.find(input => input.checked).id;
+      const disable_chroma = (colorspace === "Grayscale");
+      for (let i = 1; i < 3; i++) {
+        if (disable_chroma) {
+          dom_parameters.components[i].classList.add("disabled");
+        } else {
+          dom_parameters.components[i].classList.remove("disabled");
+        }
+        dom_parameters.huff_dc[i].disabled = disable_chroma;
+        dom_parameters.huff_ac[i].disabled = disable_chroma;
+      }
+      update();
+    }
 
     /* Attach event listener to textarea with debounce */
     let updateTimeout;
@@ -302,51 +317,34 @@ if ( 0 )
       updateTimeout = setTimeout(update, 200);
     });
 
-    function getImageSize() {
-      const selectedSizeRadio = document.querySelector('input[name="image_size"]:checked');
-      if (selectedSizeRadio) {
-        const sizeValue = selectedSizeRadio.id.replace('size', '');
-        return parseInt(sizeValue);
-      }
-      return 64; /* default size */
-    }
-
     /* The update function */
     function update() {
       /* Clear status line */
-      statusLine.textContent = '';
+      statusLine.textContent = "";
 
-      /* Get colorspace */
-      const colorspace = document.querySelector('input[name="pixfmt"]:checked + label').textContent;
+      /* Get DOM parameters */
+      const subsampling = pixfmt_values    [dom_parameters.pixfmt    .find(input => input.checked).id];
+      const image_size  = image_size_values[dom_parameters.image_size.find(input => input.checked).id];
 
-      /* Get image size */
-      const imageSize = getImageSize();
-
-      /* Initialize components array */
-      const componentsArray = [];
+      const components = [];
 
       /* Get values from enabled components */
-      const enabledComponents = document.querySelectorAll('.component:not(.disabled)');
-      for (const component of enabledComponents) {
-if ( 0 )
-{
-        const quant_dc_select = component.querySelector('input[name^="quant_dc_"]');
-        const quant_ac_select = component.querySelector('input[name^="quant_ac_"]');
-        const quant_dc = quant_dc_select.value;
-        const quant_ac = quant_ac_select.value;
-}
+      const nb_components = subsampling.length;
+      for (let i = 0; i < nb_components; i++) {
+        const quant_dc = parseInt(dom_parameters.quant_dc[i].value);
+        const quant_ac = parseInt(dom_parameters.quant_ac[i].value);
+        const dqt = new Uint8Array(64).fill(quant_ac);
+        dqt[0] = quant_dc;
 
-        const huff_dc_select = component.querySelector('select[name^="huff_dc_"]');
-        const huff_ac_select = component.querySelector('select[name^="huff_ac_"]');
-        const huff_dc = huff_dc_select.value;
-        const huff_ac = huff_ac_select.value;
+        const { lengths: dc_lengths, symbols: dc_symbols } = dht_values[dom_parameters.huff_dc[i].value];
+        const { lengths: ac_lengths, symbols: ac_symbols } = dht_values[dom_parameters.huff_ac[i].value];
 
-        /* Add component values as a subarray */
-if ( 0 ) {
-        componentsArray.push([quant_dc, quant_ac, huff_dc, huff_ac]);
-} else {
-        componentsArray.push([0, 0, huff_dc, huff_ac]);
-}
+        components.push({
+          dqt: dqt,
+          dht_dc: { lengths: dc_lengths, symbols: dc_symbols },
+          dht_ac: { lengths: ac_lengths, symbols: ac_symbols },
+          subsampling: subsampling[i],
+        });
       }
 
       /* Get ASCII content from textarea */
@@ -356,74 +354,33 @@ if ( 0 ) {
       }
 
       /* Call ascii_jpeg() with the parameters */
-      ascii_jpeg(colorspace, componentsArray, ascii, imageSize, imageSize);
+      ascii_jpeg(components, ascii, image_size.width, image_size.height);
 
       /* Update the image dimensions */
-      jpegImage.width = imageSize;
-      jpegImage.height = imageSize;
+      jpegImage.width  = image_size.width;
+      jpegImage.height = image_size.height;
 
-      const apfelstrudel_fflate = compress_to_uri(ascii);
-      console.log(apfelstrudel_fflate);
-      console.log("fflate", ascii.length, apfelstrudel_fflate.length);
-      const blabliblu = decompress_from_uri(apfelstrudel_fflate);
-      if (!blabliblu)
-        console.log("oopsie");
-      console.log(ascii == blabliblu);
+      // const apfelstrudel_fflate = compress_to_uri(ascii);
+      // console.log(apfelstrudel_fflate);
+      // console.log("fflate", ascii.length, apfelstrudel_fflate.length);
+      // const blabliblu = decompress_from_uri(apfelstrudel_fflate);
+      // if (!blabliblu)
+      //   console.log("oopsie");
+      // console.log(ascii == blabliblu);
     }
 
-    /* Handle Download JPEG button */
-    const downloadJpegButton = document.getElementById('download-jpeg');
-
-    downloadJpegButton.addEventListener('click', function() {
-      if (window.jpeg_blob) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(window.jpeg_blob);
-        link.download = 'ascii.jpeg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        statusLine.textContent = 'Error: No JPEG data available to download.';
-      }
-    });
-
-    /* Handle Download TXT button */
-    const downloadTxtButton = document.getElementById('download-txt');
-
-    downloadTxtButton.addEventListener('click', function() {
-      if (window.txt_blob) {
-        const blob_url = URL.createObjectURL(window.txt_blob);
-        window.open(blob_url, "jpeg.txt");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        statusLine.textContent = 'Error: No TXT data available to download.';
-      }
-    });
-
-    /* Handle Download Baked image button */
-    const downloadPngButton = document.getElementById('download-png');
-
-    downloadPngButton.addEventListener('click', function()
-    {
-      if (window.png_blob) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(window.png_blob);
-        link.download = 'ascii_baked.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        statusLine.textContent = 'Error: No PNG data available to download.';
-      }
-    });
+    /* Download/open buttons */
+    document.getElementById("download-jpeg").addEventListener("click", () => { download_blob(window.jpeg_blob, "ascii.jpeg"); });
+    document.getElementById("download-png"). addEventListener("click", () => { download_blob(window.png_blob,  "ascii_baked.png"); });
+    document.getElementById('download-txt'). addEventListener("click", () => { download_blob(window.txt_blob,  "jpeg.txt"); });
+    document.getElementById('open-txt').     addEventListener("click", () => { open_blob    (window.txt_blob); });
 
     /* Initial update */
+    dom_parameters.huff_dc.forEach(self => { updateHuffQuant(self); });
+    dom_parameters.huff_ac.forEach(self => { updateHuffQuant(self); });
     updateComponents();
   });
 </script>
 
 </body>
 </html>
-
