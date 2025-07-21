@@ -422,36 +422,52 @@ function dump_dht(str, lengths, symbols)
   // console.log(str, codes);
 }
 
+function deduplicate_dqt(cur_component_dqt, dqt, dqt_json)
+{
+  const cur_component_dqt_json = JSON.stringify(cur_component_dqt);
+  for (let j = 0; j < dqt_json.length; j++) {
+    if (cur_component_dqt_json == dqt_json[j])
+      return j;
+  }
+  const dqt_index = dqt.length;
+  dqt.push(cur_component_dqt);
+  dqt_json.push(cur_component_dqt_json);
+  return dqt_index;
+}
+
+function deduplicate_dht(cur_component_dht, dht, dht_json)
+{
+  const cur_component_dht_json = JSON.stringify(cur_component_dht);
+  for (let j = 0; j < dht_json.length; j++) {
+    if (cur_component_dht_json == dht_json[j])
+      return j;
+  }
+  const dht_index = dht.length;
+  cur_component_dht.written = false;
+  dht.push(cur_component_dht);
+  dht_json.push(cur_component_dht_json);
+  return dht_index;
+}
+
 function deduplicate_tables(components)
 {
   const nb_components = components.length;
 
   const dqt = [];
   const dqt_json = [];
-  const dht = null;
 
-  // DQT (Define Quantization Table)
-  for (let i = 0; i < nb_components; i++) {
-    const cur_component_dqt = components[i].dqt;
-    const cur_component_dqt_json = JSON.stringify(cur_component_dqt);
-    if (dqt.length) {
-      let new_dqt = true;
-      for (let j = 0; j < dqt_json.length; j++) {
-        if (cur_component_dqt_json == dqt_json[j]) {
-          components[i].dqt_index = j;
-          new_dqt = false;
-          break;
-        }
-      }
-      if (!new_dqt)
-        continue;
-    }
-    components[i].dqt_index = dqt.length;
-    dqt.push(cur_component_dqt);
-    dqt_json.push(cur_component_dqt_json);
+  const dht_dc = [];
+  const dht_ac = [];
+  const dht_dc_json = [];
+  const dht_ac_json = [];
+
+  for (const component of components) {
+    component.dqt_index    = deduplicate_dqt(component.dqt,    dqt,    dqt_json);
+    component.dht_dc_index = deduplicate_dht(component.dht_dc, dht_dc, dht_dc_json);
+    component.dht_ac_index = deduplicate_dht(component.dht_ac, dht_ac, dht_ac_json);
   }
 
-  return { dqt, dht };
+  return { dqt, dht_dc, dht_ac };
 }
 
 function generateJPEG(width, height, components, ascii_data)
@@ -459,8 +475,7 @@ function generateJPEG(width, height, components, ascii_data)
   const jpeg_file = new JpegFile();
   const nb_components = components.length;
 
-  const { dqt, dht } = deduplicate_tables(components);
-  console.log(dqt);
+  const { dqt, dht_dc, dht_ac } = deduplicate_tables(components);
 
   // Start of Image (SOI) marker
   jpeg_file.append_marker(0xFFD8);
@@ -469,26 +484,36 @@ function generateJPEG(width, height, components, ascii_data)
   jpeg_file.append_marker(0xFFFE, comment_data);
 
   // DQT (Define Quantization Table)
-  for (let i = 0; i < nb_components; i++) {
+  for (let i = 0; i < dqt.length; i++) {
     const dqt_data = new Uint8Array(65);
-    dqt_data[0] = i;                    // Precision and table ID
-    dqt_data.set(components[i].dqt, 1); // DQT values (DC + 63 AC)
+    dqt_data[0] = i;          // Precision and table ID
+    dqt_data.set(dqt[i], 1);  // DQT values (DC + 63 AC)
     jpeg_file.append_marker(0xFFDB, dqt_data);
   }
 
   // DHT (Define Huffman Table)
-  for (let i = 0; i < nb_components; i++) {
+  for (const component of components) {
     // DC table
-    const dc_lengths = components[i].dht_dc.lengths;
-    const dc_symbols = components[i].dht_dc.symbols;
-    // dump_dht(`[${i}.dc]`, dc_lengths, dc_symbols);
-    jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x00 | i]), dc_lengths, dc_symbols);
+    const dht_dc_index = component.dht_dc_index;
+    const cur_dht_dc = dht_dc[dht_dc_index];
+    if (!cur_dht_dc.written) {
+      const dc_lengths = cur_dht_dc.lengths;
+      const dc_symbols = cur_dht_dc.symbols;
+      // dump_dht(`[${dht_dc_index}.dc]`, dc_lengths, dc_symbols);
+      jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x00 | dht_dc_index]), dc_lengths, dc_symbols);
+      cur_dht_dc.written = true;
+    }
 
     // AC table
-    const ac_lengths = components[i].dht_ac.lengths;
-    const ac_symbols = components[i].dht_ac.symbols;
-    // dump_dht(`[${i}.ac]`, ac_lengths, ac_symbols);
-    jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x10 | i]), ac_lengths, ac_symbols);
+    const dht_ac_index = component.dht_ac_index;
+    const cur_dht_ac = dht_ac[dht_ac_index];
+    if (!cur_dht_ac.written) {
+      const ac_lengths = cur_dht_ac.lengths;
+      const ac_symbols = cur_dht_ac.symbols;
+      // dump_dht(`[${dht_ac_index}.ac]`, ac_lengths, ac_symbols);
+      jpeg_file.append_marker(0xFFC4, Uint8Array.from([0x10 | dht_ac_index]), ac_lengths, ac_symbols);
+      cur_dht_ac.written = true;
+    }
   }
 
   // SOF (Start of Frame)
@@ -514,8 +539,11 @@ function generateJPEG(width, height, components, ascii_data)
   const sos_data = new Uint8Array(sos_length);
   sos_data[0] = nb_components;
   for (let i = 0; i < nb_components; i++) {
+    const dht_dc_index = components[i].dht_dc_index;
+    const dht_ac_index = components[i].dht_ac_index;
+    const dht_indices = (dht_dc_index << 4) | dht_ac_index;
     sos_data[1 + (i * 2)] = 1 + i;        // Component identifier
-    sos_data[2 + (i * 2)] = (i << 4) | i; // Huffman table indices
+    sos_data[2 + (i * 2)] = dht_indices;  // Huffman table indices
   }
   sos_data[1 + (nb_components * 2) + 0] = 0x00;
   sos_data[1 + (nb_components * 2) + 1] = 0x3F;
