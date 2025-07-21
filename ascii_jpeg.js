@@ -1,11 +1,23 @@
 const comment_text = "ascii.jpeg <https://jpeg.ffglitch.org/ascii>";
 const comment_data = Uint8Array.from(comment_text.split("").map(c => c.charCodeAt(0)));
 
+const text_values = {
+  "Lorem Ipsum":         lorem_ipsum,
+  "Ne Me Quitte Pas":    ne_me_quitte_pas,
+  "Poema de Sete Faces": poema_de_sete_faces,
+  "Faroeste Caboclo":    faroeste_caboclo,
+  "Around the World":    around_the_world,
+  "Echoes":              echoes,
+  "Pancake Recipe":      pancakes,
+};
+
 const image_size_values = {
   "8x8":     { width:   8, height:   8 },
   "16x16":   { width:  16, height:  16 },
   "32x32":   { width:  32, height:  32 },
+  "48x48":   { width:  48, height:  48 },
   "64x64":   { width:  64, height:  64 },
+  "96x96":   { width:  96, height:  96 },
   "128x128": { width: 128, height: 128 },
 };
 
@@ -246,6 +258,8 @@ const dht_values = {
     symbols[0x20] = 0; // SPACE
     return { suggested_quant: quant, lengths: lengths, symbols: symbols };
   })(),
+  // TODO skip 7 bit byte
+  // TODO read 7 bit byte
 };
 
 const preset_values = {
@@ -260,13 +274,6 @@ const preset_values = {
   "skip DC | 2 chars":         [ "[1] skip",                    "[2] skip 8 + 8 bits"         ],
   "skip DC | 2 chars (lines)": [ "[1] skip",                    "[2] skip 8 + 8 bits (lines)" ],
   "skip DC | 2 chars (words)": [ "[1] skip",                    "[2] skip 8 + 8 bits (words)" ],
-};
-
-const text_values = {
-  "Lorem Ipsum":         lorem_ipsum,
-  "Ne Me Quitte Pas":    ne_me_quitte_pas,
-  "Poema de Sete Faces": poema_de_sete_faces,
-  "Faroeste Caboclo":    faroeste_caboclo,
 };
 
 class JpegFile {
@@ -303,176 +310,6 @@ class JpegFile {
     });
     return data;
   }
-}
-
-// Global variable to store the JPEG blob
-window.jpeg_blob = null;
-window.txt_blob = null;
-
-function get_dht(val, klass)
-{
-  const fill_with_zeros = true;
-  // const fill_with_zeros = true;
-  const l7 = fill_with_zeros ? 127 : 0;
-  // val = klass == 0 ? 0 : 23; // skip for dc, poetry for ac
-  let count, lengths, symbols, quant;
-  let count7;
-  switch (val) {
-    case -7:
-      quant = 1;
-      // WIP there will never be a sequence of 7 1s in a row.
-      // if DC and AC are 7-bit, this will work.
-      count = 127;
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, count, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(count);
-      if ( klass == 0 )
-        break;
-      symbols.fill(7);
-      for ( let xxx = 0x20; xxx < 0x40; xxx++ )
-        symbols[xxx >> 1] = 0;
-      break;
-    // TODO add skip (7 bits)
-
-    case 9:
-      // every 2 bytes are (ignored) + (8 bits),
-      // except for a few values which are EOB.
-      quant = 2;
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(128).fill(8);
-      symbols[0x0A] = 0; // \n
-      symbols[0x0D] = 0; // \r
-      symbols[0x20] = 0; // SPACE
-      symbols[0x21] = 0; // !
-      symbols[0x22] = 0; // "
-      symbols[0x23] = 0; // #
-      symbols[0x24] = 0; // $
-      symbols[0x25] = 0; // %
-      symbols[0x26] = 0; // &
-      symbols[0x27] = 0; // '
-      symbols[0x28] = 0; // (
-      symbols[0x29] = 0; // )
-      symbols[0x2A] = 0; // *
-      symbols[0x2B] = 0; // +
-      symbols[0x2C] = 0; // ,
-      symbols[0x2D] = 0; // -
-      symbols[0x2E] = 0; // .
-      symbols[0x2F] = 0; // /
-      // symbols[0x41] = 0; // A
-      // symbols[0x42] = 0; // B
-      // symbols[0x43] = 0; // C
-      // symbols[0x44] = 0; // D
-      // symbols[0x45] = 0; // E
-      // symbols[0x46] = 0; // F
-      // symbols[0x47] = 0; // G
-      // symbols[0x48] = 0; // H
-      // symbols[0x49] = 0; // I
-      // symbols[0x4A] = 0; // J
-      // symbols[0x4B] = 0; // K
-      // symbols[0x4C] = 0; // L
-      // symbols[0x4D] = 0; // M
-      // symbols[0x4E] = 0; // N
-      // symbols[0x4F] = 0; // O
-      // symbols[0x50] = 0; // P
-      // symbols[0x51] = 0; // Q
-      // symbols[0x52] = 0; // R
-      // symbols[0x53] = 0; // S
-      // symbols[0x54] = 0; // T
-      // symbols[0x55] = 0; // U
-      // symbols[0x56] = 0; // V
-      // symbols[0x57] = 0; // W
-      // symbols[0x58] = 0; // X
-      // symbols[0x59] = 0; // Y
-      // symbols[0x5A] = 0; // Z
-      break;
-
-    case 10:
-      // 0000     -> EOB control codes (includes CR LF)
-      // 0001     -> EOB control codes
-      // 0010     -> EOB (space) !"#$%&'()*+,-./
-      // 0011xxxx -> 4 bits 0-9 :;<=>?
-      // 0100xxxx -> 4 bits @ A-O
-      // 0101xxxx -> 4 bits P-Z [\]^_
-      // 0110xxxx -> 4 bits ` a-o
-      // 0111xxxx -> 4 bits p-z {|}~ (del)
-      // 1000     -> EOB
-      // 1001     -> EOB
-      // 1010     -> EOB
-      // 1011     -> EOB
-      // 1100     -> EOB
-      // 1101     -> EOB
-      // 1110     -> EOB
-      // 11110000 -> EOB
-      // 11110001 -> EOB
-      // 11110010 -> EOB
-      // 11110011 -> EOB
-      // 11110100 -> EOB
-      // 11110101 -> EOB
-      // 11110110 -> EOB
-      // 11110111 -> EOB
-      // 11111000 -> EOB
-      // 11111001 -> EOB
-      // 11111010 -> EOB
-      // 11111011 -> EOB
-      // 11111100 -> EOB
-      // 11111101 -> EOB
-      // 11111110 -> EOB
-      // 11111111 -> does not happen
-      // NOTE:
-      //   LF (0x0a) 0000 1010 => EOB EOB
-      //   CR (0x0d) 0000 1110 => EOB EOB
-      quant = 16;
-      lengths = new Uint8Array([0, 0, 0, 15, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(30);
-      for ( let i = 3; i < 8; i++ )
-        symbols[i] = 4;
-      break;
-
-    // TODO same thing without run
-    // similar to n bits, but:
-    // - adds a run value to the codes (breaks ffmpeg if not done carefully)
-    // - turns the last count7 codes into EOB
-    case 21:
-      // 1 bit
-      // -1, 1
-      // 0xxxxxxV
-      quant = 1;
-      count = 61;
-      count7 = 5;
-      lengths = new Uint8Array([0, 0, 0, 0, 0, 0, count, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(count + count7 + l7);
-      for ( let i = 0; i < count; i++ )
-        symbols[i] = 1 | ((i & 15) << 4);
-      break;
-    case 22:
-      // 2 bits
-      // -3..-2, 2..3
-      // 0xxxxxVV
-      quant = 1;
-      count = 30;
-      count7 = 7;
-      lengths = new Uint8Array([0, 0, 0, 0, 0, count, 0, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(count + count7 + l7);
-      for ( let i = 0; i < count; i++ )
-        symbols[i] = 2 | ((i & 15) << 4);
-      break;
-    case 23:
-      // 3 bits
-      // -7..-4, 4..7
-      // 0xxxxVVV
-      quant = 1;
-      count = 15;
-      count7 = 7;
-      lengths = new Uint8Array([0, 0, 0, 0, count, 0, 0, count7 + l7, 0, 0, 0, 0, 0, 0, 0, 0]);
-      symbols = new Uint8Array(count + count7 + l7);
-      for ( let i = 0; i < count; i++ )
-        symbols[i] = 3 | ((i & 15) << 4);
-      break;
-
-    default:
-      console.error('Invalid DC Huffman type:', val);
-      break;
-  }
-  return [ lengths, symbols, quant ];
 }
 
 function decode_xbits(code, len)
@@ -585,13 +422,45 @@ function dump_dht(str, lengths, symbols)
   // console.log(str, codes);
 }
 
-function generateJPEG(width, height, components, ascii_data)
+function deduplicate_tables(components)
 {
-  console.log(components);
-
   const nb_components = components.length;
 
+  const dqt = [];
+  const dqt_json = [];
+  const dht = null;
+
+  // DQT (Define Quantization Table)
+  for (let i = 0; i < nb_components; i++) {
+    const cur_component_dqt = components[i].dqt;
+    const cur_component_dqt_json = JSON.stringify(cur_component_dqt);
+    if (dqt.length) {
+      let new_dqt = true;
+      for (let j = 0; j < dqt_json.length; j++) {
+        if (cur_component_dqt_json == dqt_json[j]) {
+          components[i].dqt_index = j;
+          new_dqt = false;
+          break;
+        }
+      }
+      if (!new_dqt)
+        continue;
+    }
+    components[i].dqt_index = dqt.length;
+    dqt.push(cur_component_dqt);
+    dqt_json.push(cur_component_dqt_json);
+  }
+
+  return { dqt, dht };
+}
+
+function generateJPEG(width, height, components, ascii_data)
+{
   const jpeg_file = new JpegFile();
+  const nb_components = components.length;
+
+  const { dqt, dht } = deduplicate_tables(components);
+  console.log(dqt);
 
   // Start of Image (SOI) marker
   jpeg_file.append_marker(0xFFD8);
@@ -633,9 +502,10 @@ function generateJPEG(width, height, components, ascii_data)
   sof_data[5] = nb_components;  // Number of components
   for (let i = 0; i < nb_components; i++) {
     const subsampling = components[i].subsampling;
+    const dqt_index   = components[i].dqt_index;
     sof_data[6 + (i * 3)] = 1 + i;        // Component identifier
     sof_data[7 + (i * 3)] = subsampling;  // Subsampling factors
-    sof_data[8 + (i * 3)] = i;            // Quantization table index
+    sof_data[8 + (i * 3)] = dqt_index;    // Quantization table index
   }
   jpeg_file.append_marker(0xFFC0, sof_data);
 
@@ -644,8 +514,8 @@ function generateJPEG(width, height, components, ascii_data)
   const sos_data = new Uint8Array(sos_length);
   sos_data[0] = nb_components;
   for (let i = 0; i < nb_components; i++) {
-    sos_data[1 + (i * 2)] = 1 + i;          // Component identifier
-    sos_data[2 + (i * 2)] = (i << 4) | i;   // Huffman table indices
+    sos_data[1 + (i * 2)] = 1 + i;        // Component identifier
+    sos_data[2 + (i * 2)] = (i << 4) | i; // Huffman table indices
   }
   sos_data[1 + (nb_components * 2) + 0] = 0x00;
   sos_data[1 + (nb_components * 2) + 1] = 0x3F;
@@ -661,53 +531,4 @@ function generateJPEG(width, height, components, ascii_data)
 
   // Return the generated JPEG data
   return jpeg_file.generate();
-}
-
-function ascii_jpeg(components, ascii, width, height)
-{
-  // Generate the JPEG data
-  const jpegData = generateJPEG(width, height, components, ascii);
-
-  if (jpegData) {
-    // Create a Blob and set the src of the image
-    const blob = new Blob([jpegData], { type: 'image/jpeg' });
-    const url = URL.createObjectURL(blob);
-
-    // Set the src attribute of the image with id "jpeg"
-    const jpegImage = document.getElementById('jpeg');
-    jpegImage.src = url;
-
-    // Store the blob globally for download
-    window.jpeg_blob = blob;
-
-    const txt_blob = new Blob([jpegData], { type: 'text/plain' });
-    window.txt_blob = txt_blob;
-
-    // When the JPEG image loads, create a scaled version for the PNG image
-    jpegImage.onload = function() {
-      // Create a canvas
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext('2d');
-
-      // Disable image smoothing for nearest-neighbor scaling
-      ctx.imageSmoothingEnabled = false;
-
-      // Draw the JPEG image scaled up to 512x512
-      ctx.drawImage(jpegImage, 0, 0, width, height, 0, 0, 512, 512);
-
-      // Set the PNG image source to the canvas data
-      const pngUrl = canvas.toDataURL('image/png');
-      const pngImage = document.getElementById('png');
-      pngImage.src = pngUrl;
-
-      // Store the PNG blob for download
-      canvas.toBlob(function(pngBlob) {
-        window.png_blob = pngBlob;
-      }, 'image/png');
-    };
-  } else {
-    console.error('Failed to generate JPEG data.');
-  }
 }

@@ -58,11 +58,11 @@
         <button id="open-txt">Open jpeg.txt</button>
       </div>
     </div>
-    <!-- baked.png -->
+    <!-- ascii_jpeg_baked.png -->
     <div class="image-row">
-      <img id="png" src="" alt="baked.png">
+      <img id="png" src="" alt="ascii_jpeg_baked.png">
       <div class="button-container">
-        <button id="download-png">Download baked.png</button>
+        <button id="download-png">Download ascii_jpeg_baked.png</button>
       </div>
     </div>
   </div>
@@ -79,7 +79,7 @@
   const default_image_size = "16x16";
   const default_pixfmt = "YUV444";
   const default_preset = "skip DC | full range AC";
-  const default_text   = "ne_me_quitte_pas";
+  const default_text   = "Ne Me Quitte Pas";
 
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
@@ -151,6 +151,10 @@
     const blob_url = URL.createObjectURL(blob);
     window.open(blob_url, "jpeg.txt");
   }
+
+  // Global variable to store the JPEG blob
+  window.jpeg_blob = null;
+  window.txt_blob = null;
 
   document.addEventListener("DOMContentLoaded", function() {
     const textarea   = document.getElementById("textbox");
@@ -245,37 +249,37 @@
     div.insertAdjacentHTML("beforeend", html);
     dom_parameters.texts = div.querySelector('select[name="text"]');
 
-    dom_parameters.image_size.forEach(self => { self.addEventListener("change", update); });
-    dom_parameters.pixfmt    .forEach(self => { self.addEventListener("change", updateComponents); });
-    dom_parameters.huff_dc   .forEach(self => { self.addEventListener("change", updateHuff); });
-    dom_parameters.huff_ac   .forEach(self => { self.addEventListener("change", updateHuff); });
-    dom_parameters.quant_dc  .forEach(self => { self.addEventListener("change", updateQuant); });
-    dom_parameters.quant_ac  .forEach(self => { self.addEventListener("change", updateQuant); });
+    dom_parameters.image_size.forEach(self => { self.addEventListener("change", update_jpeg); });
+    dom_parameters.pixfmt    .forEach(self => { self.addEventListener("change", update_components); });
+    dom_parameters.huff_dc   .forEach(self => { self.addEventListener("change", update_huff); });
+    dom_parameters.huff_ac   .forEach(self => { self.addEventListener("change", update_huff); });
+    dom_parameters.quant_dc  .forEach(self => { self.addEventListener("change", update_quant); });
+    dom_parameters.quant_ac  .forEach(self => { self.addEventListener("change", update_quant); });
     dom_parameters.presets.addEventListener("change", (e) => {
       const cur_preset = preset_values[e.target.value];
-      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; updateHuffQuant(self); });
-      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; updateHuffQuant(self); });
-      update();
+      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; update_huff_quant(self); });
+      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; update_huff_quant(self); });
+      update_jpeg();
     });
     dom_parameters.texts.addEventListener("change", (e) => {
       textarea.value = text_values[e.target.value];
-      update();
+      update_jpeg();
     });
 
     /* Set default ASCII content after ascii_jpeg.js is loaded */
-    textarea.value = default_ascii;
+    textarea.value = text_values[default_text];
 
-    function updateQuant(e)
+    function update_quant(e)
     {
       const input = e.target;
       if (input.value < 0)
         input.value = 1;
       else if (input.value > 255)
         input.value = 255;
-      update();
+      update_jpeg();
     }
 
-    function updateHuffQuant(select)
+    function update_huff_quant(select)
     {
       const split = select.name.split("_");
       const is_dc = (split[1] === "dc");
@@ -288,13 +292,13 @@
         dom_parameters.quant_ac[compn].value = quant;
     }
 
-    function updateHuff(e)
+    function update_huff(e)
     {
-      updateHuffQuant(e.target);
-      update();
+      update_huff_quant(e.target);
+      update_jpeg();
     }
 
-    function updateComponents()
+    function update_components()
     {
       const colorspace = dom_parameters.pixfmt.find(input => input.checked).id;
       const disable_chroma = (colorspace === "Grayscale");
@@ -307,18 +311,67 @@
         dom_parameters.huff_dc[i].disabled = disable_chroma;
         dom_parameters.huff_ac[i].disabled = disable_chroma;
       }
-      update();
+      update_jpeg();
     }
 
     /* Attach event listener to textarea with debounce */
     let updateTimeout;
     textarea.addEventListener('input', function() {
       clearTimeout(updateTimeout);
-      updateTimeout = setTimeout(update, 200);
+      updateTimeout = setTimeout(update_jpeg, 200);
     });
 
-    /* The update function */
-    function update() {
+    function ascii_jpeg(width, height, components, ascii)
+    {
+      // Generate the JPEG data
+      const jpegData = generateJPEG(width, height, components, ascii);
+      console.log("jpeg length", jpegData.length);
+
+      if (jpegData) {
+        // Create a Blob and set the src of the image
+        const blob = new Blob([jpegData], { type: 'image/jpeg' });
+        const url = URL.createObjectURL(blob);
+
+        // Set the src attribute of the image with id "jpeg"
+        const jpegImage = document.getElementById('jpeg');
+        jpegImage.src = url;
+
+        // Store the blob globally for download
+        window.jpeg_blob = blob;
+
+        const txt_blob = new Blob([jpegData], { type: 'text/plain' });
+        window.txt_blob = txt_blob;
+
+        // When the JPEG image loads, create a scaled version for the PNG image
+        jpegImage.onload = function() {
+          // Create a canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+
+          // Disable image smoothing for nearest-neighbor scaling
+          ctx.imageSmoothingEnabled = false;
+
+          // Draw the JPEG image scaled up to 512x512
+          ctx.drawImage(jpegImage, 0, 0, width, height, 0, 0, 512, 512);
+
+          // Set the PNG image source to the canvas data
+          const pngUrl = canvas.toDataURL('image/png');
+          const pngImage = document.getElementById('png');
+          pngImage.src = pngUrl;
+
+          // Store the PNG blob for download
+          canvas.toBlob(function(pngBlob) {
+            window.png_blob = pngBlob;
+          }, 'image/png');
+        };
+      } else {
+        console.error('Failed to generate JPEG data.');
+      }
+    }
+
+    function update_jpeg() {
       /* Clear status line */
       statusLine.textContent = "";
 
@@ -354,7 +407,7 @@
       }
 
       /* Call ascii_jpeg() with the parameters */
-      ascii_jpeg(components, ascii, image_size.width, image_size.height);
+      ascii_jpeg(image_size.width, image_size.height, components, ascii);
 
       /* Update the image dimensions */
       jpegImage.width  = image_size.width;
@@ -371,14 +424,14 @@
 
     /* Download/open buttons */
     document.getElementById("download-jpeg").addEventListener("click", () => { download_blob(window.jpeg_blob, "ascii.jpeg"); });
-    document.getElementById("download-png"). addEventListener("click", () => { download_blob(window.png_blob,  "ascii_baked.png"); });
+    document.getElementById("download-png"). addEventListener("click", () => { download_blob(window.png_blob,  "ascii_jpeg_baked.png"); });
     document.getElementById('download-txt'). addEventListener("click", () => { download_blob(window.txt_blob,  "jpeg.txt"); });
     document.getElementById('open-txt').     addEventListener("click", () => { open_blob    (window.txt_blob); });
 
     /* Initial update */
-    dom_parameters.huff_dc.forEach(self => { updateHuffQuant(self); });
-    dom_parameters.huff_ac.forEach(self => { updateHuffQuant(self); });
-    updateComponents();
+    dom_parameters.huff_dc.forEach(self => { update_huff_quant(self); });
+    dom_parameters.huff_ac.forEach(self => { update_huff_quant(self); });
+    update_components();
   });
 </script>
 
