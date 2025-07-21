@@ -276,42 +276,6 @@ const preset_values = {
   "skip DC | 2 chars (words)": [ "[1] skip",                    "[2] skip 8 + 8 bits (words)" ],
 };
 
-class JpegFile {
-  constructor() {
-    this.segments = [];
-  }
-
-  append_marker(marker, ...args) {
-    const length = args.reduce((sum, arr) => sum + arr.length, 0);
-    const segment = new Uint8Array(length ? 4 : 2);
-    segment[0] = marker >> 8;
-    segment[1] = marker;
-    if (length) {
-      segment[2] = (length + 2) >> 8;
-      segment[3] = (length + 2);
-    }
-    this.segments.push(segment);
-    args.forEach((data) => {
-      this.segments.push(data);
-    });
-  }
-
-  append_data(data) {
-    this.segments.push(data);
-  }
-
-  generate() {
-    const length = this.segments.reduce((sum, arr) => sum + arr.length, 0);
-    const data = new Uint8Array(length);
-    let offset = 0;
-    this.segments.forEach(segment => {
-      data.set(segment, offset);
-      offset += segment.length;
-    });
-    return data;
-  }
-}
-
 function decode_xbits(code, len)
 {
   const signbit = 1 << (len - 1);
@@ -425,41 +389,35 @@ function dump_dht(str, lengths, symbols)
 function deduplicate_dqt(cur_component_dqt, dqt, dqt_json)
 {
   const cur_component_dqt_json = JSON.stringify(cur_component_dqt);
-  for (let j = 0; j < dqt_json.length; j++) {
-    if (cur_component_dqt_json == dqt_json[j])
-      return j;
-  }
+  if (cur_component_dqt_json in dqt_json)
+    return dqt_json[cur_component_dqt_json];
   const dqt_index = dqt.length;
   dqt.push(cur_component_dqt);
-  dqt_json.push(cur_component_dqt_json);
+  dqt_json[cur_component_dqt_json] = dqt_index;
   return dqt_index;
 }
 
 function deduplicate_dht(cur_component_dht, dht, dht_json)
 {
   const cur_component_dht_json = JSON.stringify(cur_component_dht);
-  for (let j = 0; j < dht_json.length; j++) {
-    if (cur_component_dht_json == dht_json[j])
-      return j;
-  }
+  if (cur_component_dht_json in dht_json)
+    return dht_json[cur_component_dht_json];
   const dht_index = dht.length;
   cur_component_dht.written = false;
   dht.push(cur_component_dht);
-  dht_json.push(cur_component_dht_json);
+  dht_json[cur_component_dht_json] = dht_index;
   return dht_index;
 }
 
 function deduplicate_tables(components)
 {
-  const nb_components = components.length;
-
   const dqt = [];
-  const dqt_json = [];
+  const dqt_json = {};
 
   const dht_dc = [];
   const dht_ac = [];
-  const dht_dc_json = [];
-  const dht_ac_json = [];
+  const dht_dc_json = {};
+  const dht_ac_json = {};
 
   for (const component of components) {
     component.dqt_index    = deduplicate_dqt(component.dqt,    dqt,    dqt_json);
@@ -468,6 +426,42 @@ function deduplicate_tables(components)
   }
 
   return { dqt, dht_dc, dht_ac };
+}
+
+class JpegFile {
+  constructor() {
+    this.segments = [];
+  }
+
+  append_marker(marker, ...args) {
+    const length = args.reduce((sum, arr) => sum + arr.length, 0);
+    const segment = new Uint8Array(length ? 4 : 2);
+    segment[0] = marker >> 8;
+    segment[1] = marker;
+    if (length) {
+      segment[2] = (length + 2) >> 8;
+      segment[3] = (length + 2);
+    }
+    this.segments.push(segment);
+    args.forEach((data) => {
+      this.segments.push(data);
+    });
+  }
+
+  append_data(data) {
+    this.segments.push(data);
+  }
+
+  generate() {
+    const length = this.segments.reduce((sum, arr) => sum + arr.length, 0);
+    const data = new Uint8Array(length);
+    let offset = 0;
+    this.segments.forEach(segment => {
+      data.set(segment, offset);
+      offset += segment.length;
+    });
+    return data;
+  }
 }
 
 function generateJPEG(width, height, components, ascii_data)
