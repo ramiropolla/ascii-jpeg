@@ -10,17 +10,19 @@
 
 [https://jpeg.ffglitch.org/ascii](https://jpeg.ffglitch.org/ascii)
 
-## Before I lose your attention, here's a colorful image generated with `ascii.jpeg`
+## Example
+
+Before I lose your attention with a lot of technical information, here's a colorful image generated with `ascii.jpeg`:
 
 ![ascii_jpeg_baked.png](ascii_jpeg_baked.png)
 
-The image above is the visual representation (scaled up to `512x512` pixels) of the `ASCII` plain-text data of the [`Lorem Ipsum`](https://en.wikipedia.org/wiki/Lorem_ipsum), interpreted as `JPEG`.
+The image above is the visual representation of the `ASCII` plain-text data of the [`Lorem Ipsum`](https://en.wikipedia.org/wiki/Lorem_ipsum), interpreted as `JPEG`, and then scaled up to `512x512` pixels.
 
 The original unscaled `JPEG` file is the small image below:
 
 ![ascii.jpeg](ascii.jpeg)
 
-This is the hex dump of the contents of the original `JPEG` file:
+This is the hex dump of the contents of the original unscaled `JPEG` file:
 
 ```
 00000000  ff d8 ff db 00 43 00 01  02 02 02 02 02 02 02 02  |.....C..........|
@@ -77,7 +79,7 @@ Notice that the file is split into three parts:
 - The `JPEG` End of Image marker (`0xffd9`)
 
 But you can't just stuff `ASCII` data into any `JPEG` file.
-You need some carefully-crafted `Huffman` tables in the headers of the `JPEG` file for that.
+You need some carefully-crafted `Huffman` tables in the headers of the `JPEG` file for that, which I'll get into more details in a while.
 
 ## JPEG
 
@@ -91,21 +93,26 @@ This doesn't explain much nor does it make it any easier to understand the encod
 
 Each orange/green pair is a `Huffman` code followed by a `DCT` coefficient.
 `Huffman` codes are [variable-length codes](https://en.wikipedia.org/wiki/Variable-length_code), meaning that they are encoded with a variable number of bits.
+For example, we can see the codes:
 
-The `Huffman` codes specify two values:
+| Huffman code (orange) | DCT coefficient (green) | Total number of bits |
+| --------------------- | ----------------------- | -------------------- |
+|    `010` |      `0` | 4 |
+|  `11010` |  `01010` | 10 |
+|  `11010` |  `10001` | 10 |
+| `111000` | `101100` | 12 |
+|    `100` |    `011` | 6 |
+|     ...  |     ...  | ... |
+
+Each `Huffman` code specifes two values:
 - How many `DCT` coefficient to skip in the `zig-zag` (not important right now);
 - How many bits the `DCT` coefficient immediately following it will have.
 
-For example, we can see the codes:
+Also note a special `Huffman` code (colored in red) which specifies an `End of Block` (`EOB`), and does not specify any `DCT` coefficient.
 
-| Huffman code (orange) | DCT coefficient (green) |
-| ------ | ------ |
-|    010 |      0 |
-|  11010 |  01010 |
-|  11010 |  10001 |
-| 111000 | 101100 |
-|    100 |    011 |
-|    ... |    ... |
+| Huffman code (red) | DCT coefficient (green) | Total number of bits |
+| ------------------ | ----------------------- | -------------------- |
+| `00` | - | 2 |
 
 ## ASCII
 
@@ -115,19 +122,63 @@ A plain-text `ASCII` file is just a long sequence of characters.
 
 ![USASCII code chart](USASCII_code_chart.png)
 
-`ASCII` codes are actually `7-bit`, but on a plain-text
-For example, we have the following codes:
+`ASCII` codes are actually `7-bit`, but on a plain-text file, they are made up of `8-bit` bytes, with the `most significant bit` always being `0`:
 
+| ASCII code in binary | Meaning |
+| -------------------- | ------- |
+| `00000000` | The `NUL` control character |
+| `00001010` | The `new line` control character |
+| `00100000` | A white space |
+| `00100011` | The number sign `#` (no, this is not a _hashtag_) |
+| `00110111` | The number `7` |
+| `01000001` | The uppercase letter `A` |
+| `01100001` | The lowercase letter `a` |
+| `01111110` | The `~` character |
+| `01111111` | The `DEL` control character |
 
-## Huffman table
+## Tweaking the JPEG Huffman tables
 
-The way huffman tables are defined in JPEG files (restricts) them a little bit.
+At the heart of `ascii.jpeg` is the generation of carefully-crafted `Huffman` tables so that each `Huffman`/`DCT` pair maps perfectly (or almost perfectly) into the `8-bit` `ASCII` binary codes.
 
-We start with the code '0' .....
+We can safely ignore most `ASCII` control codes, except for `00001010` (new line), so we are left with having to support codes from `00100000` to `01111110`.
 
-So we can't define all codes from '00000000' to '11111111'.
+There are two properties of this subset of the `8-bit` `ASCII` binary codes that help us generate the tables we want:
+- all codes start with a bit `0`;
+- we will never encounter seven `1` bits in a row.
 
-`ASCII` never starts with '1', so we can get that out of the way.
+Below you will find the description of each `Huffman` table currently supported by `ascii.jpeg`.
+
+| Name | Bit sequences | Bits skipped | Bits read | Zero-run value range | DCT value range | Notes |
+| ---- | ------------- | ------------ | --------- | -------------------- | --------------- | ----- |
+| `[1] skip`            | `0xxxxxxx` | `8` | `0` | - | - | Entirely skips an `8-bit` byte. Acts as an `EOB` for `AC` coefficients. |
+| `[1] 1 bit`           | `0xxxxxxV` | `7` | `1` | - | `±1` | |
+| `[1] 2 bits`          | `0xxxxxVV` | `6` | `2` | - | `±2..3` | |
+| `[1] 3 bits`          | `0xxxxVVV` | `5` | `3` | - | `±4..7` | |
+| `[1] 4 bits`          | `0xxxVVVV` | `4` | `4` | - | `±8..15` | |
+| `[1] 5 bits`          | `0xxVVVVV` | `3` | `5` | - | `±16..31` | |
+| `[1] 6 bits`          | `0xVVVVVV` | `2` | `6` | - | `±32..63` | |
+| `[1] 7 bits`          | `0VVVVVVV` | `1` | `7` | - | `±64..127` | |
+| `[1] 1-6 bits`        | `00VVVVVV`<br>`010VVVVV`<br>`0110VVVV`<br>`01110VVV`<br>`011110VV`<br>`0111110V`<br>`0111111V` | variable | variable | - | `±32..63`<br>`±16..31`<br>`±8..15`<br>`±4..7`<br>`±2..3`<br>`±1`<br>`±1` | Gives a wider range of `DCT` coefficient values. |
+| `[1] run + 1 bit`     | `0xxxxxxV` | `7` | `1` | `0..15` | `±1` | |
+| `[1] run + 2 bits`    | `0xxxxxVV` | `6` | `2` | `0..14` | `±2..3` | |
+| `[1] run + 3 bits`    | `0xxxxVVV` | `5` | `3` | `0..6` | `±4..7` | |
+| `[1] run + 4 bits`    | `0xxxVVVV` | `4` | `4` | `0..2` | `±8..15` | |
+| `[1] word blocks`     | `0000`<br>`0001`<br>`0010`<br>`0011xxxx`<br>`0100xxxx`<br>`0101xxxx`<br>`0110xxxx`<br>`0111xxxx` | `4` | `0` or `4` | - | `±8..15` | Control characters, white spaces, and punctuation act as `EOB` for `AC` coefficients.<br>`WARNING`: variable number of bits! |
+| `[1] line blocks`     | `0000`<br>`0001`<br>`0010xxxx`<br>`0011xxxx`<br>`0100xxxx`<br>`0101xxxx`<br>`0110xxxx`<br>`0111xxxx` | `4` | `0` or `4` | - | `±8..15` | Control characters act as `EOB` for `AC` coefficients.<br>`WARNING`: variable number of bits! |
+| `[2] skip 8 + 8 bits` | `0xxxxxxxVVVVVVVV` | `8` | `8` | - | `±128..255` | Uses `2` bytes. |
+| `[2] skip 8 + 8 bits (lines)` | `0xxxxxxxVVVVVVVV` | `8` | `8` | - | `±128..255` | Uses `2` bytes.<br>The newline character acts as `EOB` for `AC` coefficients. |
+| `[2] skip 8 + 8 bits (words)` | `0xxxxxxxVVVVVVVV` | `8` | `8` | - | `±128..255` | Uses `2` bytes.<br>The space character acts as `EOB` for `AC` coefficients. |
+
+## More about JPEG
+
+`JPEG` files may be `Grayscale` (having just one color component) or many different combinations of [`YUV`](https://en.wikipedia.org/wiki/YCbCr) (having three color components).
+
+Each component specifies two `Huffman` tables, one for the first `DCT` coefficient (called the `DC` coefficient) and a second table for the remaining 63 `AC` coefficients.
+
+Each component also specifies a `Quantization` table, which consists of `64` coefficients that range from `1` to `255`.
+In `ascii.jpeg`, the `Quantization` table is simplified with only one value for the `DC` coefficient and one value for all remaining `AC` coefficients, instead of the entire table with `64` coefficients.
+
+![JPEG components](components.png)
 
 ## Limitations in JPEG decoders
 
@@ -173,30 +224,3 @@ The previous part of the image will have been decoded.
 
 `libjpeg-turbo` will ignore the last coefficient (past index 64) and consider
 the current block complete. It will continue decoding the image.
-
-The same `JPEG` file above could be better compressed without `ASCII` data to the following data:
-
-```
-00000000  ff d8 ff db 00 43 00 01  02 02 02 02 02 02 02 02  |.....C..........|
-00000010  02 02 02 02 02 02 02 02  02 02 02 02 02 02 02 02  |................|
-*
-00000040  02 02 02 02 02 02 02 ff  c0 00 11 08 00 20 00 20  |............. . |
-00000050  03 01 22 00 02 11 00 03  11 00 ff c4 00 14 00 01  |..".............|
-00000060  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-00000070  ff c4 00 15 10 01 01 00  00 00 00 00 00 00 00 00  |................|
-00000080  00 00 00 00 00 08 00 ff  c4 00 14 01 01 00 00 00  |................|
-00000090  00 00 00 00 00 00 00 00  00 00 00 00 00 ff c4 00  |................|
-000000a0  15 11 01 01 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-000000b0  00 00 08 00 ff da 00 0c  03 01 00 02 11 03 11 00  |................|
-000000c0  3f 00 1c 8d b0 e6 6d 86  c3 94 3a 43 28 b2 1b 8c  |?.....m...:C(...|
-000000d0  a7 43 a1 ca 1a 4d 26 33  70 80 d8 74 10 19 44 06  |.C...M&3p..t..D.|
-000000e0  f8 75 36 99 21 b4 de 20  37 1a 4d 27 53 a4 10 18  |.u6.!.. 7.M'S...|
-000000f0  4d e6 58 20 37 9b cc b0  ce 61 86 93 a8 ba 08 0d  |M.X 7....a......|
-00000100  c6 d8 20 34 9a 44 06 53  49 b4 40 75 39 c3 99 c8  |.. 4.D.SI.@u9...|
-00000110  c9 0c a6 33 a1 d0 de 20  36 18 4c 62 03 09 bc d2  |...3... 6.Lb....|
-00000120  20 34 9a 60 80 d8 71 34  88 0f 10 40 6f 36 99 04  | 4.`..q4...@o6..|
-00000130  06 f3 99 c4 c2 2e 86 91  01 d4 cb 0e a6 58 6c 39  |.............Xl9|
-00000140  41 01 94 e4 68 37 19 4d  22 03 74 36 1c 0c 26 5b  |A...h7.M".t6..&[|
-00000150  ff d9                                             |..|
-00000152
-```
