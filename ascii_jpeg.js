@@ -412,10 +412,9 @@ function deduplicate_dht(cur_component_dht, dht, dht_json)
 function deduplicate_tables(components)
 {
   const dqt = [];
-  const dqt_json = {};
-
   const dht_dc = [];
   const dht_ac = [];
+  const dqt_json = {};
   const dht_dc_json = {};
   const dht_ac_json = {};
 
