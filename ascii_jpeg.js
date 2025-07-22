@@ -1,16 +1,6 @@
 const comment_text = "ascii.jpeg <https://jpeg.ffglitch.org/ascii>";
 const comment_data = Uint8Array.from(comment_text.split("").map(c => c.charCodeAt(0)));
 
-const text_values = {
-  "Lorem Ipsum":         lorem_ipsum,
-  "Ne Me Quitte Pas":    ne_me_quitte_pas,
-  "Poema de Sete Faces": poema_de_sete_faces,
-  "Faroeste Caboclo":    faroeste_caboclo,
-  "Around the World":    around_the_world,
-  "Echoes":              echoes,
-  "Pancake Recipe":      pancakes,
-};
-
 const image_size_values = {
   "8x8":     { width:   8, height:   8 },
   "16x16":   { width:  16, height:  16 },
