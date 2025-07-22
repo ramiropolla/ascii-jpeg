@@ -31,6 +31,13 @@
     <div class="box" id="texts">
       <span>Texts:</span>
     </div>
+    <!-- State -->
+    <div class="image-row" id="state">
+      <div class="button-container">
+        <button id="reset-state">Reset state</button>
+        <button id="share-state">Share state</button>
+      </div>
+    </div>
     <!-- About -->
     <div class="image-row" id="about">
       <div class="button-container">
@@ -84,6 +91,8 @@
 <script src="ascii_text.js"></script>
 <script src="ascii_jpeg.js"></script>
 <script>
+  const STORAGE_KEY = "state";
+
   const default_image_size = "32x32";
   const default_pixfmt = "YUV420";
   const default_preset = "skip DC | 2 chars (words)";
@@ -329,11 +338,94 @@
       updateTimeout = setTimeout(update_jpeg, 200);
     });
 
+    function save_state(width, height, components, text)
+    {
+      const new_state = {};
+      new_state.width = width;
+      new_state.height = height;
+      new_state.components = [];
+      new_state.text = text;
+      for (const component of components) {
+        const new_component = {
+          dqt: component.dqt,
+          dht_dc: { lengths: component.dht_dc.lengths, symbols: component.dht_dc.symbols },
+          dht_ac: { lengths: component.dht_ac.lengths, symbols: component.dht_ac.symbols },
+          subsampling: component.subsampling,
+        };
+        new_state.components.push(new_component);
+      }
+      const new_state_json = JSON.stringify(new_state);
+      localStorage.setItem(STORAGE_KEY, new_state_json);
+    }
+
+    function update_state(new_state) {
+      /* Image size */
+      let image_size_str = `${new_state.width}x${new_state.height}`;
+      if (!dom_parameters.image_size.find(input => input.id == image_size_str))
+        image_size_str = default_image_size;
+
+      /* Pixel format */
+      let pixfmt_str = default_pixfmt;
+      for (const name in pixfmt_values) {
+        const subsampling = pixfmt_values[name];
+        if (new_state.components.length == subsampling.length) {
+          let ok = true;
+          for (let i = 0; i < subsampling.length; i++) {
+            if (new_state.components[i].subsampling != subsampling[i]) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) {
+            pixfmt_str = name;
+            break;
+          }
+        }
+      }
+
+      /* Update image size */
+      dom_parameters.image_size.forEach(self => {
+        self.checked = (self.id === image_size_str);
+      });
+      /* Update pixfmt */
+      dom_parameters.pixfmt    .forEach(self => {
+        self.checked = (self.id === pixfmt_str);
+      });
+
+      /* Update dht and dqt */
+      for (let i = 0; i < new_state.components.length; i++) {
+        const new_component = new_state.components[i];
+        let dc_dht_str = default_dc_dht;
+        let ac_dht_str = default_ac_dht;
+        dom_parameters.quant_dc[i].value = new_component.dqt[0];
+        dom_parameters.quant_ac[i].value = new_component.dqt[1];
+
+        const new_dht_dc_json = JSON.stringify({ lengths: new_component.dht_dc.lengths, symbols: new_component.dht_dc.symbols, });
+        const new_dht_ac_json = JSON.stringify({ lengths: new_component.dht_ac.lengths, symbols: new_component.dht_ac.symbols, });
+        for (const name in dht_values) {
+          const dht_value = dht_values[name];
+          const dht_value_json = JSON.stringify({
+            lengths: dht_value.lengths,
+            symbols: dht_value.symbols,
+          });
+          if (dht_value_json == new_dht_dc_json)
+            dc_dht_str = name;
+          if (dht_value_json == new_dht_ac_json)
+            ac_dht_str = name;
+        }
+        dom_parameters.huff_dc[i].value = dc_dht_str;
+        dom_parameters.huff_ac[i].value = ac_dht_str;
+      }
+      /* Update text */
+      textarea.value = new_state.text;
+
+      return true;
+    }
+
     function ascii_jpeg(width, height, components, ascii)
     {
       // Generate the JPEG data
       const jpegData = generateJPEG(width, height, components, ascii);
-      console.log("jpeg length", jpegData.length);
 
       if (jpegData) {
         // Create a Blob and set the src of the image
@@ -409,13 +501,16 @@
       }
 
       /* Get ASCII content from textarea */
-      const ascii = transliterate(textarea.value);
-      if (ascii != textarea.value) {
+      const textarea_text = textarea.value;
+      const ascii = transliterate(textarea_text);
+      if (ascii != textarea_text) {
         statusLine.textContent = "Warning: non-ascii characters have been transliterated to ascii.";
       }
 
       /* Call ascii_jpeg() with the parameters */
       ascii_jpeg(image_size.width, image_size.height, components, ascii);
+
+      save_state(image_size.width, image_size.height, components, textarea_text);
 
       /* Update the image dimensions */
       jpegImage.width  = image_size.width;
@@ -437,10 +532,93 @@
     document.getElementById('open-txt').     addEventListener("click", () => { open_blob    (window.txt_blob); });
     document.getElementById('open-github').  addEventListener("click", () => { window.open  ("https://github.com/ramiropolla/ascii-jpeg"); });
 
+    document.getElementById('reset-state').addEventListener("click", () => {
+      /* Update image size */
+      dom_parameters.image_size.forEach(self => {
+        self.checked = (self.id === default_image_size);
+      });
+      /* Update pixfmt */
+      dom_parameters.pixfmt    .forEach(self => {
+        self.checked = (self.id === default_pixfmt);
+      });
+      /* Update preset */
+      for (let i = 0; i < dom_parameters.presets.options.length; i++) {
+        if (dom_parameters.presets.options[i].value === default_preset) {
+          dom_parameters.presets.selectedIndex = i;
+          break;
+        }
+      }
+      /* Update dht and dqt */
+      const cur_preset = preset_values[default_preset];
+      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; update_huff_quant(self); });
+      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; update_huff_quant(self); });
+      /* Update text */
+      for (let i = 0; i < dom_parameters.texts.options.length; i++) {
+        if (dom_parameters.texts.options[i].value === default_text) {
+          dom_parameters.texts.selectedIndex = i;
+          break;
+        }
+      }
+      textarea.value = text_values[default_text];
+      window.location.hash = "";
+      update_components();
+      localStorage.setItem(STORAGE_KEY, "");
+      statusLine.textContent = "State reset";
+    });
+
     /* Initial update */
     dom_parameters.huff_dc.forEach(self => { update_huff_quant(self); });
     dom_parameters.huff_ac.forEach(self => { update_huff_quant(self); });
+
+    document.getElementById('share-state').addEventListener("click", () => {
+      const cur_state = localStorage.getItem(STORAGE_KEY);
+      if (cur_state) {
+        const compressed_state = compress_to_uri(cur_state);
+        window.location.hash = `#${compressed_state}`;
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => { statusLine.textContent = "Link copied to clipboard"; })
+          .catch(err => { statusLine.textContent = `Could not copy to clipboard: ${err}`; });
+      }
+    });
+
+    /* Look for state at startup */
+    let state_updated_str;
+    {
+      let state_updated = false;
+      const cur_hash = window.location.hash;
+      if (cur_hash) {
+        const decompressed_state = decompress_from_uri(cur_hash.slice(1));
+        if (decompressed_state) {
+          let new_state = null;
+          try {
+            new_state = JSON.parse(decompressed_state);
+          } catch {
+          }
+          if (new_state)
+            state_updated = update_state(new_state);
+          if (state_updated)
+            state_updated_str = "State loaded from URL hash";
+        }
+      }
+      if (!state_updated) {
+        const decompressed_state = localStorage.getItem(STORAGE_KEY);
+        let new_state = null;
+        try {
+          new_state = JSON.parse(decompressed_state);
+        } catch {
+        }
+        if (new_state) {
+          state_updated = update_state(new_state);
+        }
+        if (state_updated)
+          state_updated_str = "State loaded from localStorage";
+      }
+      console.log(state_updated);
+    }
+
     update_components();
+    if (state_updated_str)
+      statusLine.textContent = state_updated_str;
   });
 </script>
 
