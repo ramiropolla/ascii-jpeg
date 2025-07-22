@@ -324,6 +324,7 @@ function dump_dht(str, lengths, symbols)
     console.log(str, codes);
   } else {
     const codes = [];
+    const ascii_codes = {};
     let nb_codes = 0;
     let huffcode = 0;
     for (const [i, length] of lengths.entries()) {
@@ -331,11 +332,23 @@ function dump_dht(str, lengths, symbols)
       for (let j = 0; j < length; j++) {
         const zero_run = symbols[nb_codes] >> 4;
         const nb_xbits = symbols[nb_codes] & 15;
+        if (huffbits + nb_xbits != 8) {
+          return;
+        }
         for (let k = 0; k < 1 << nb_xbits; k++) {
           const huffcode_str = encode_binary_str(huffbits, nb_xbits, huffcode, k);
           const xbits_val = decode_xbits(k, nb_xbits);
           const ascii_val = parseInt(huffcode_str, 2);
           const ascii_char = to_ascii_char(ascii_val);
+          if (ascii_val >= 0 && ascii_val < 0x7F) {
+            ascii_codes[ascii_val] = {
+            "huffcode": huffcode_str,
+            "ascii_val": ascii_val,
+            "ascii_char": ascii_char,
+            "zero_run": zero_run,
+            "value": xbits_val,
+            }
+          }
           codes.push({
             "huffcode": huffcode_str,
             "ascii_val": ascii_val,
@@ -354,8 +367,10 @@ function dump_dht(str, lengths, symbols)
       console.log(codes.toSorted((l, r) => {
         return l.value - r.value;
       }));
-    } else {
+    } else if ( 0 ) {
       console.log(codes);
+    } else {
+      return ascii_codes;
     }
   }
 
