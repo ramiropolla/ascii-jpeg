@@ -31,6 +31,14 @@
     <div class="box" id="texts">
       <span>Texts:</span>
     </div>
+    <!-- About -->
+    <div class="image-row" id="about">
+      <div class="button-container">
+        <button id="open-github">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAACXBIWXMAAAOhAAADoQG8l/2DAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAATJQTFRFAAAAAAAAAAAAAABVQEBAMzMzKysrICAgKysrJycnIiIzIDAwHi0tKysrKCgoISwsICsrKSkzJycxJiYvJCQuIykuJisvJSouIygwJCgxJCgwIysuJSkwJCgvJCsuJSgvJSguJCowIykvJSguJCovJCkvIykuIygwJSgwJCkuJCkuIygwJSovJSovJCkuJCkwIykwJCgvJCguJCowJCovJCovJCkvIykvJSgwJCovJCovJCkvIykvJSovJCkvIyovJCkvJCkvJCkvJCkvJCovIykvJSkuJCkwJCkuJCkvJSgvJCkvJCgvJSkwJCkvJCkvJCkvJCkvJCkuJCovJCkuJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvnMjEGgAAAGV0Uk5TAAECAwQFBggMDQ8QERITFxgZGhscLDY3Oj9AQkVGTlJTVVdZXF1eX2BjZGZnaGlre35/gIGHiImLjI2Ol5mcn6OoqaqytLW2xsjKzdDR0tPU1dbX4efo6+3w8vP09ff4+fr7/P5WbvlNAAABE0lEQVQYGV3BhyJCYQCG4e/IiIRsZWvZM5SRvUdJg0LRe/+34G/gHM+jJt/yRaZYylwu+2TXs/1B0+dBr34FCtgUAmoKVXCohFQ3WuafypiM7hwkhzaL8FmB0tbQIeS6JcWAeWnA75E8/kEpCsQk7xuwIptF4M2rEMaKbBYwgjoB0i2yse6BYz0CG3JYAx6UB6JyCAJ5lYFVOSwBZeWAuBx2gKxugCdLNlYKuNYeRlQ2EYy4AhjvYf2wIu8YflkZ1sOvpBLjMiYSaWrSljTD1/QMMCtjjoYpGec8t08e7bpl9FF3phpPhmSHGlzUpLtU13/Hy1XKJaMV49anps6DKrTJaIfqvlt/Rk6zLhmu7Omw6r4B0XNjU3cf3ioAAAAASUVORK5CYII=" />
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- ascii -->
@@ -427,6 +435,7 @@
     document.getElementById("download-png"). addEventListener("click", () => { download_blob(window.png_blob,  "ascii_jpeg_baked.png"); });
     document.getElementById('download-txt'). addEventListener("click", () => { download_blob(window.txt_blob,  "jpeg.txt"); });
     document.getElementById('open-txt').     addEventListener("click", () => { open_blob    (window.txt_blob); });
+    document.getElementById('open-github').  addEventListener("click", () => { window.open  ("https://github.com/ramiropolla/ascii-jpeg"); });
 
     /* Initial update */
     dom_parameters.huff_dc.forEach(self => { update_huff_quant(self); });
