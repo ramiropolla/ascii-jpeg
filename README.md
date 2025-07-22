@@ -169,6 +169,9 @@ Below you will find the description of each `Huffman` table currently supported 
 | `[2] skip 8 + 8 bits (lines)` | `0xxxxxxxVVVVVVVV` | `8` | `8` | - | `±128..255` | Uses `2` bytes.<br>The newline character acts as `EOB` for `AC` coefficients. |
 | `[2] skip 8 + 8 bits (words)` | `0xxxxxxxVVVVVVVV` | `8` | `8` | - | `±128..255` | Uses `2` bytes.<br>The space character acts as `EOB` for `AC` coefficients. |
 
+The `DCT` coefficient values for each `Huffman` table and `ASCII` binary code can be found here:
+[https://jpeg.ffglitch.org/ascii/dht.html](https://jpeg.ffglitch.org/ascii/dht.html)
+
 ## More about JPEG
 
 `JPEG` files may be `Grayscale` (having just one color component) or many different combinations of [`YUV`](https://en.wikipedia.org/wiki/YCbCr) (having three color components).
