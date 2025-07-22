@@ -1,0 +1,105 @@
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ascii.jpeg Huffman tables</title>
+<style>
+/* Dark mode styles */
+body {
+  background-color: #111111;
+  color: #e0e0e0;
+  font-family: monospace;
+}
+
+table {
+  width: 100%;
+  overflow: hidden;
+}
+
+th, td {
+  text-align: center;
+  position: relative;
+}
+
+th, td:nth-child(-n + 2) {
+  font-weight: bold;
+  color: #bb86fc;
+}
+
+tr:nth-child(even) {
+  background-color: #222222;
+}
+
+tr:hover, td:hover {
+  background-color: #333333;
+}
+
+th, td {
+  border: 1px solid #333333;
+}
+
+th:hover, td:hover {
+  border: 1px solid #bb86fc;
+}
+
+td:hover::after,
+th:hover::after {
+  content: "";
+  position: absolute;
+  background-color: #333333;
+  left: 0;
+  top: -5000px;
+  height: 10000px;
+  width: 100%;
+  z-index: -1;
+}
+
+</style>
+</head>
+<body>
+<div id="container">
+</div>
+
+<script src="ascii_jpeg.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById("container");
+
+    let thead = "<th>ASCII (binary)</th><th>ASCII (character)</th>";
+    let tbody = [];
+    for (let i = 0x00; i < 0x7F; i++) {
+      tbody[i] = "";
+      tbody[i] += `<td>${encode_binary_str(0, 8, 0, i)}</td>`;
+      tbody[i] += `<td>${to_ascii_char(i)}</td>`;
+    }
+
+    for (const [key, value] of Object.entries(dht_values)) {
+      const ascii_codes = dump_dht(key, value.lengths, value.symbols);
+      if (!ascii_codes)
+        continue;
+      thead += `<th>${key}</th>`;
+      for (let i = 0x00; i < 0x7F; i++) {
+        const entry = ascii_codes[i];
+        tbody[i] += "<td>";
+        if (entry) {
+          if (entry.value === 0)
+            tbody[i] += "EOB";
+          else
+            tbody[i] += entry.value;
+        }
+        tbody[i] += "</td>";
+      }
+    }
+    let html = "";
+    html += "<table>";
+    html += `  <tr>${thead}</tr>`;
+    for (let i = 0x00; i < 0x7F; i++) {
+      html += `  <tr>${tbody[i]}</tr>`;
+    }
+    html += "</table>";
+    container.insertAdjacentHTML("beforeend", html);
+  });
+</script>
+
+</body>
+</html>

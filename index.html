@@ -1,0 +1,626 @@
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ascii.jpeg</title>
+<link rel="stylesheet" href="ascii_jpeg.css">
+</head>
+<body>
+<div class="container">
+  <!-- jpeg headers -->
+  <div class="col_headers">
+    <div class="title">
+      <h3>jpeg headers</h3>
+    </div>
+    <!-- Image Sizes -->
+    <div class="box" id="image-sizes">
+      <span>Size:</span>
+    </div>
+    <!-- Pixel Formats -->
+    <div class="box" id="pixel-formats">
+      <div id="pixel-formats-list">
+        <span>Pixel format:</span>
+      </div>
+      <div id="components"></div>
+    </div>
+    <!-- Presets -->
+    <div class="box" id="presets">
+      <span>Presets:</span>
+    </div>
+    <!-- Texts -->
+    <div class="box" id="texts">
+      <span>Texts:</span>
+    </div>
+    <!-- State -->
+    <div class="image-row" id="state">
+      <div class="button-container">
+        <button id="reset-state">Reset state</button>
+        <button id="share-state">Share state</button>
+      </div>
+    </div>
+    <!-- About -->
+    <div class="image-row" id="about">
+      <div class="button-container">
+        <button id="open-github">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAMAAADXqc3KAAAACXBIWXMAAAOhAAADoQG8l/2DAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAATJQTFRFAAAAAAAAAAAAAABVQEBAMzMzKysrICAgKysrJycnIiIzIDAwHi0tKysrKCgoISwsICsrKSkzJycxJiYvJCQuIykuJisvJSouIygwJCgxJCgwIysuJSkwJCgvJCsuJSgvJSguJCowIykvJSguJCovJCkvIykuIygwJSgwJCkuJCkuIygwJSovJSovJCkuJCkwIykwJCgvJCguJCowJCovJCovJCkvIykvJSgwJCovJCovJCkvIykvJSovJCkvIyovJCkvJCkvJCkvJCkvJCovIykvJSkuJCkwJCkuJCkvJSgvJCkvJCgvJSkwJCkvJCkvJCkvJCkvJCkuJCovJCkuJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvJCkvnMjEGgAAAGV0Uk5TAAECAwQFBggMDQ8QERITFxgZGhscLDY3Oj9AQkVGTlJTVVdZXF1eX2BjZGZnaGlre35/gIGHiImLjI2Ol5mcn6OoqaqytLW2xsjKzdDR0tPU1dbX4efo6+3w8vP09ff4+fr7/P5WbvlNAAABE0lEQVQYGV3BhyJCYQCG4e/IiIRsZWvZM5SRvUdJg0LRe/+34G/gHM+jJt/yRaZYylwu+2TXs/1B0+dBr34FCtgUAmoKVXCohFQ3WuafypiM7hwkhzaL8FmB0tbQIeS6JcWAeWnA75E8/kEpCsQk7xuwIptF4M2rEMaKbBYwgjoB0i2yse6BYz0CG3JYAx6UB6JyCAJ5lYFVOSwBZeWAuBx2gKxugCdLNlYKuNYeRlQ2EYy4AhjvYf2wIu8YflkZ1sOvpBLjMiYSaWrSljTD1/QMMCtjjoYpGec8t08e7bpl9FF3phpPhmSHGlzUpLtU13/Hy1XKJaMV49anps6DKrTJaIfqvlt/Rk6zLhmu7Omw6r4B0XNjU3cf3ioAAAAASUVORK5CYII=" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ascii -->
+  <div class="col_ascii">
+    <div class="title">
+      <h3>ascii</h3>
+    </div>
+    <!-- ascii text -->
+    <textarea id="textbox"></textarea>
+  </div>
+
+  <!-- output -->
+  <div class="col_output">
+    <div class="title">
+      <h3>ascii.jpeg</h3>
+    </div>
+    <!-- ascii.jpeg -->
+    <div class="image-row">
+      <div id="jpeg-div">
+        <img id="jpeg" src="" alt="ascii.jpeg">
+      </div>
+      <div class="button-container">
+        <button id="download-jpeg">Download ascii.jpeg</button>
+        <button id="download-txt">Download jpeg.txt</button>
+        <button id="open-txt">Open jpeg.txt</button>
+      </div>
+    </div>
+    <!-- ascii_jpeg_baked.png -->
+    <div class="image-row">
+      <img id="png" src="" alt="ascii_jpeg_baked.png">
+      <div class="button-container">
+        <button id="download-png">Download ascii_jpeg_baked.png</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Line -->
+<div id="status"></div>
+
+<script src="fflate-only.min.js"></script>
+<script src="transliteration.min.js"></script>
+<script src="ascii_text.js"></script>
+<script src="ascii_jpeg.js"></script>
+<script>
+  const STORAGE_KEY = "state";
+
+  const default_image_size = "32x32";
+  const default_pixfmt = "YUV420";
+  const default_preset = "skip DC | 2 chars (words)";
+  const default_text   = "Lorem Ipsum";
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  function deflate(text)
+  {
+    try {
+      const input = encoder.encode(text);
+      return fflate.deflateSync(input);
+    } catch {
+      return false;
+    }
+  }
+
+  function inflate(compressed)
+  {
+    try {
+      const output = fflate.inflateSync(compressed);
+      return decoder.decode(output);
+    } catch {
+      return false;
+    }
+  }
+
+  function compress_to_uri(text)
+  {
+    try {
+      const compressed = deflate(text);
+      if (!compressed)
+        return false;
+      let str = "";
+      for (let b of compressed)
+        str += String.fromCharCode(b);
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, "");
+    } catch {
+      return false;
+    }
+  }
+
+  function decompress_from_uri(b64)
+  {
+    try {
+      b64 = b64.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4)
+        b64 += '=';
+      const binary = atob(b64);
+      const compressed = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++)
+        compressed[i] = binary.charCodeAt(i);
+      return inflate(compressed);
+    } catch {
+      return false;
+    }
+  }
+
+  function download_blob(blob, name)
+  {
+    const blob_url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href     = blob_url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function open_blob(blob)
+  {
+    const blob_url = URL.createObjectURL(blob);
+    window.open(blob_url, "jpeg.txt");
+  }
+
+  // Global variable to store the JPEG blob
+  window.jpeg_blob = null;
+  window.txt_blob = null;
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const textarea   = document.getElementById("textbox");
+    const statusLine = document.getElementById("status");
+    const jpegImage  = document.getElementById("jpeg");
+    const pngImage   = document.getElementById("png");
+
+    let html, div;
+
+    let dom_parameters = {};
+
+    /* Image Sizes */
+    html = "";
+    for (const name in image_size_values) {
+      html += `<input type="radio" id="${name}" name="image_size"${name === default_image_size ? " checked" : ""}>`;
+      html += `<label class="option-label" for="${name}">${name}</label>`;
+    }
+    div = document.getElementById("image-sizes");
+    div.insertAdjacentHTML("beforeend", html);
+    dom_parameters.image_size = Array.from(div.querySelectorAll("input[name='image_size']"));
+
+    /* Pixel Formats */
+    html = "";
+    for (const name in pixfmt_values) {
+      html += `<input type="radio" id="${name}" name="pixfmt"${name === default_pixfmt ? " checked" : ""}>`;
+      html += `<label class="option-label" for="${name}">${name}</label>`;
+    }
+    div = document.getElementById("pixel-formats-list");
+    div.insertAdjacentHTML("beforeend", html);
+    dom_parameters.pixfmt = Array.from(div.querySelectorAll("input[name='pixfmt']"));
+
+    /* Components */
+    const default_preset_values = preset_values[default_preset];
+    const default_dc_dht = default_preset_values[0];
+    const default_ac_dht = default_preset_values[1];
+    html = "";
+    for (let i = 0; i < 3; i++) {
+      html += `<div class="component" id="component${i}">`;
+      html += "  <table>";
+      /* Labels */
+      html += "    <tr>";
+      html += `      <th>Component #${i + 1}</th>`;
+      html += "      <th>DC</th>";
+      html += "      <th>AC</th>";
+      html += "    </tr>";
+      /* Huffman */
+      let dc_huff_options = "";
+      let ac_huff_options = "";
+      for (const name in dht_values) {
+        dc_huff_options += `<option value="${name}"${name === default_dc_dht ? " selected" : ""}>${name}</option>`;
+        ac_huff_options += `<option value="${name}"${name === default_ac_dht ? " selected" : ""}>${name}</option>`;
+      }
+      html += "    <tr>";
+      html += "      <td>Huffman:</td>";
+      html += `      <td><select name="huff_dc_${i}">${dc_huff_options}"</select></td>`;
+      html += `      <td><select name="huff_ac_${i}">${ac_huff_options}"</select></td>`;
+      html += "    </tr>";
+      /* Quantization */
+      html += "    <tr>";
+      html += "      <td>Quantization:</td>";
+      html += `      <td><input type="number" min="1" max="255" name="quant_dc_${i}"></td>`;
+      html += `      <td><input type="number" min="1" max="255" name="quant_ac_${i}"></td>`;
+      html += "    </tr>";
+      html += "  </table>";
+      html += "</div>";
+    }
+    div = document.getElementById("components");
+    div.insertAdjacentHTML("beforeend", html);
+    dom_parameters.components = Array.from(div.querySelectorAll('div[id^="component"]'));
+    dom_parameters.huff_dc    = Array.from(div.querySelectorAll('select[name^="huff_dc"]'));
+    dom_parameters.huff_ac    = Array.from(div.querySelectorAll('select[name^="huff_ac"]'));
+    dom_parameters.quant_dc   = Array.from(div.querySelectorAll('input[name^="quant_dc"]'));
+    dom_parameters.quant_ac   = Array.from(div.querySelectorAll('input[name^="quant_ac"]'));
+
+    /* Presets */
+    html = "";
+    let preset_options = "";
+    for (const name in preset_values)
+      preset_options += `<option value="${name}" ${name === default_preset ? " selected" : ""}>${name}</option>`;
+    html += `<select name='preset'>${preset_options}</select>`;
+    div = document.getElementById("presets");
+    div.insertAdjacentHTML("beforeend", html);
+    dom_parameters.presets = div.querySelector('select[name="preset"]');
+
+    /* Texts */
+    html = "";
+    let text_options = "";
+    for (const name in text_values)
+      text_options += `<option value="${name}" ${name === default_text ? " selected" : ""}>${name}</option>`;
+    html += `<select name='text'>${text_options}</select>`;
+    div = document.getElementById("texts");
+    div.insertAdjacentHTML("beforeend", html);
+    dom_parameters.texts = div.querySelector('select[name="text"]');
+
+    dom_parameters.image_size.forEach(self => { self.addEventListener("change", update_jpeg); });
+    dom_parameters.pixfmt    .forEach(self => { self.addEventListener("change", update_components); });
+    dom_parameters.huff_dc   .forEach(self => { self.addEventListener("change", update_huff); });
+    dom_parameters.huff_ac   .forEach(self => { self.addEventListener("change", update_huff); });
+    dom_parameters.quant_dc  .forEach(self => { self.addEventListener("change", update_quant); });
+    dom_parameters.quant_ac  .forEach(self => { self.addEventListener("change", update_quant); });
+    dom_parameters.presets.addEventListener("change", (e) => {
+      const cur_preset = preset_values[e.target.value];
+      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; update_huff_quant(self); });
+      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; update_huff_quant(self); });
+      update_jpeg();
+    });
+    dom_parameters.texts.addEventListener("change", (e) => {
+      textarea.value = text_values[e.target.value];
+      update_jpeg();
+    });
+
+    /* Set default ASCII content after ascii_jpeg.js is loaded */
+    textarea.value = text_values[default_text];
+
+    function update_quant(e)
+    {
+      const input = e.target;
+      if (input.value < 0)
+        input.value = 1;
+      else if (input.value > 255)
+        input.value = 255;
+      update_jpeg();
+    }
+
+    function update_huff_quant(select)
+    {
+      const split = select.name.split("_");
+      const is_dc = (split[1] === "dc");
+      const compn = parseInt(split[2]);
+      const cur_dht = dht_values[select.value];
+      const quant = cur_dht.suggested_quant;
+      if (is_dc)
+        dom_parameters.quant_dc[compn].value = quant;
+      else
+        dom_parameters.quant_ac[compn].value = quant;
+    }
+
+    function update_huff(e)
+    {
+      update_huff_quant(e.target);
+      update_jpeg();
+    }
+
+    function update_components()
+    {
+      const colorspace = dom_parameters.pixfmt.find(input => input.checked).id;
+      const disable_chroma = (colorspace === "Grayscale");
+      for (let i = 1; i < 3; i++) {
+        if (disable_chroma) {
+          dom_parameters.components[i].classList.add("disabled");
+        } else {
+          dom_parameters.components[i].classList.remove("disabled");
+        }
+        dom_parameters.huff_dc[i].disabled = disable_chroma;
+        dom_parameters.huff_ac[i].disabled = disable_chroma;
+      }
+      update_jpeg();
+    }
+
+    /* Attach event listener to textarea with debounce */
+    let updateTimeout;
+    textarea.addEventListener('input', function() {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(update_jpeg, 200);
+    });
+
+    function save_state(width, height, components, text)
+    {
+      const new_state = {};
+      new_state.width = width;
+      new_state.height = height;
+      new_state.components = [];
+      new_state.text = text;
+      for (const component of components) {
+        const new_component = {
+          dqt: component.dqt,
+          dht_dc: { lengths: component.dht_dc.lengths, symbols: component.dht_dc.symbols },
+          dht_ac: { lengths: component.dht_ac.lengths, symbols: component.dht_ac.symbols },
+          subsampling: component.subsampling,
+        };
+        new_state.components.push(new_component);
+      }
+      const new_state_json = JSON.stringify(new_state);
+      localStorage.setItem(STORAGE_KEY, new_state_json);
+    }
+
+    function update_state(new_state) {
+      /* Image size */
+      let image_size_str = `${new_state.width}x${new_state.height}`;
+      if (!dom_parameters.image_size.find(input => input.id == image_size_str))
+        image_size_str = default_image_size;
+
+      /* Pixel format */
+      let pixfmt_str = default_pixfmt;
+      for (const name in pixfmt_values) {
+        const subsampling = pixfmt_values[name];
+        if (new_state.components.length == subsampling.length) {
+          let ok = true;
+          for (let i = 0; i < subsampling.length; i++) {
+            if (new_state.components[i].subsampling != subsampling[i]) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) {
+            pixfmt_str = name;
+            break;
+          }
+        }
+      }
+
+      /* Update image size */
+      dom_parameters.image_size.forEach(self => {
+        self.checked = (self.id === image_size_str);
+      });
+      /* Update pixfmt */
+      dom_parameters.pixfmt    .forEach(self => {
+        self.checked = (self.id === pixfmt_str);
+      });
+
+      /* Update dht and dqt */
+      for (let i = 0; i < new_state.components.length; i++) {
+        const new_component = new_state.components[i];
+        let dc_dht_str = default_dc_dht;
+        let ac_dht_str = default_ac_dht;
+        dom_parameters.quant_dc[i].value = new_component.dqt[0];
+        dom_parameters.quant_ac[i].value = new_component.dqt[1];
+
+        const new_dht_dc_json = JSON.stringify({ lengths: new_component.dht_dc.lengths, symbols: new_component.dht_dc.symbols, });
+        const new_dht_ac_json = JSON.stringify({ lengths: new_component.dht_ac.lengths, symbols: new_component.dht_ac.symbols, });
+        for (const name in dht_values) {
+          const dht_value = dht_values[name];
+          const dht_value_json = JSON.stringify({
+            lengths: dht_value.lengths,
+            symbols: dht_value.symbols,
+          });
+          if (dht_value_json == new_dht_dc_json)
+            dc_dht_str = name;
+          if (dht_value_json == new_dht_ac_json)
+            ac_dht_str = name;
+        }
+        dom_parameters.huff_dc[i].value = dc_dht_str;
+        dom_parameters.huff_ac[i].value = ac_dht_str;
+      }
+      /* Update text */
+      textarea.value = new_state.text;
+
+      return true;
+    }
+
+    function ascii_jpeg(width, height, components, ascii)
+    {
+      // Generate the JPEG data
+      const jpegData = generateJPEG(width, height, components, ascii);
+
+      if (jpegData) {
+        // Create a Blob and set the src of the image
+        const blob = new Blob([jpegData], { type: 'image/jpeg' });
+        const url = URL.createObjectURL(blob);
+
+        // Set the src attribute of the image with id "jpeg"
+        const jpegImage = document.getElementById('jpeg');
+        jpegImage.src = url;
+
+        // Store the blob globally for download
+        window.jpeg_blob = blob;
+
+        const txt_blob = new Blob([jpegData], { type: 'text/plain' });
+        window.txt_blob = txt_blob;
+
+        // When the JPEG image loads, create a scaled version for the PNG image
+        jpegImage.onload = function() {
+          // Create a canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+
+          // Disable image smoothing for nearest-neighbor scaling
+          ctx.imageSmoothingEnabled = false;
+
+          // Draw the JPEG image scaled up to 512x512
+          ctx.drawImage(jpegImage, 0, 0, width, height, 0, 0, 512, 512);
+
+          // Set the PNG image source to the canvas data
+          const pngUrl = canvas.toDataURL('image/png');
+          const pngImage = document.getElementById('png');
+          pngImage.src = pngUrl;
+
+          // Store the PNG blob for download
+          canvas.toBlob(function(pngBlob) {
+            window.png_blob = pngBlob;
+          }, 'image/png');
+        };
+      } else {
+        console.error('Failed to generate JPEG data.');
+      }
+    }
+
+    function update_jpeg() {
+      /* Clear status line */
+      statusLine.textContent = "";
+
+      /* Get DOM parameters */
+      const subsampling = pixfmt_values    [dom_parameters.pixfmt    .find(input => input.checked).id];
+      const image_size  = image_size_values[dom_parameters.image_size.find(input => input.checked).id];
+
+      const components = [];
+
+      /* Get values from enabled components */
+      const nb_components = subsampling.length;
+      for (let i = 0; i < nb_components; i++) {
+        const quant_dc = parseInt(dom_parameters.quant_dc[i].value);
+        const quant_ac = parseInt(dom_parameters.quant_ac[i].value);
+        const dqt = new Uint8Array(64).fill(quant_ac);
+        dqt[0] = quant_dc;
+
+        const { lengths: dc_lengths, symbols: dc_symbols } = dht_values[dom_parameters.huff_dc[i].value];
+        const { lengths: ac_lengths, symbols: ac_symbols } = dht_values[dom_parameters.huff_ac[i].value];
+
+        components.push({
+          dqt: dqt,
+          dht_dc: { lengths: dc_lengths, symbols: dc_symbols },
+          dht_ac: { lengths: ac_lengths, symbols: ac_symbols },
+          subsampling: subsampling[i],
+        });
+      }
+
+      /* Get ASCII content from textarea */
+      const textarea_text = textarea.value;
+      const ascii = transliterate(textarea_text);
+      if (ascii != textarea_text) {
+        statusLine.textContent = "Warning: non-ascii characters have been transliterated to ascii.";
+      }
+
+      /* Call ascii_jpeg() with the parameters */
+      ascii_jpeg(image_size.width, image_size.height, components, ascii);
+
+      save_state(image_size.width, image_size.height, components, textarea_text);
+
+      /* Update the image dimensions */
+      jpegImage.width  = image_size.width;
+      jpegImage.height = image_size.height;
+
+      // const apfelstrudel_fflate = compress_to_uri(ascii);
+      // console.log(apfelstrudel_fflate);
+      // console.log("fflate", ascii.length, apfelstrudel_fflate.length);
+      // const blabliblu = decompress_from_uri(apfelstrudel_fflate);
+      // if (!blabliblu)
+      //   console.log("oopsie");
+      // console.log(ascii == blabliblu);
+    }
+
+    /* Download/open buttons */
+    document.getElementById("download-jpeg").addEventListener("click", () => { download_blob(window.jpeg_blob, "ascii.jpeg"); });
+    document.getElementById("download-png"). addEventListener("click", () => { download_blob(window.png_blob,  "ascii_jpeg_baked.png"); });
+    document.getElementById('download-txt'). addEventListener("click", () => { download_blob(window.txt_blob,  "jpeg.txt"); });
+    document.getElementById('open-txt').     addEventListener("click", () => { open_blob    (window.txt_blob); });
+    document.getElementById('open-github').  addEventListener("click", () => { window.open  ("https://github.com/ramiropolla/ascii-jpeg"); });
+
+    document.getElementById('reset-state').addEventListener("click", () => {
+      /* Update image size */
+      dom_parameters.image_size.forEach(self => {
+        self.checked = (self.id === default_image_size);
+      });
+      /* Update pixfmt */
+      dom_parameters.pixfmt    .forEach(self => {
+        self.checked = (self.id === default_pixfmt);
+      });
+      /* Update preset */
+      for (let i = 0; i < dom_parameters.presets.options.length; i++) {
+        if (dom_parameters.presets.options[i].value === default_preset) {
+          dom_parameters.presets.selectedIndex = i;
+          break;
+        }
+      }
+      /* Update dht and dqt */
+      const cur_preset = preset_values[default_preset];
+      dom_parameters.huff_dc.forEach(self => { self.value = cur_preset[0]; update_huff_quant(self); });
+      dom_parameters.huff_ac.forEach(self => { self.value = cur_preset[1]; update_huff_quant(self); });
+      /* Update text */
+      for (let i = 0; i < dom_parameters.texts.options.length; i++) {
+        if (dom_parameters.texts.options[i].value === default_text) {
+          dom_parameters.texts.selectedIndex = i;
+          break;
+        }
+      }
+      textarea.value = text_values[default_text];
+      window.location.hash = "";
+      update_components();
+      localStorage.setItem(STORAGE_KEY, "");
+      statusLine.textContent = "State reset";
+    });
+
+    /* Initial update */
+    dom_parameters.huff_dc.forEach(self => { update_huff_quant(self); });
+    dom_parameters.huff_ac.forEach(self => { update_huff_quant(self); });
+
+    document.getElementById('share-state').addEventListener("click", () => {
+      const cur_state = localStorage.getItem(STORAGE_KEY);
+      if (cur_state) {
+        const compressed_state = compress_to_uri(cur_state);
+        window.location.hash = `#${compressed_state}`;
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => { statusLine.textContent = "Link copied to clipboard"; })
+          .catch(err => { statusLine.textContent = `Could not copy to clipboard: ${err}`; });
+      }
+    });
+
+    /* Look for state at startup */
+    let state_updated_str;
+    {
+      let state_updated = false;
+      const cur_hash = window.location.hash;
+      if (cur_hash) {
+        const decompressed_state = decompress_from_uri(cur_hash.slice(1));
+        if (decompressed_state) {
+          let new_state = null;
+          try {
+            new_state = JSON.parse(decompressed_state);
+          } catch {
+          }
+          if (new_state)
+            state_updated = update_state(new_state);
+          if (state_updated)
+            state_updated_str = "State loaded from URL hash";
+        }
+      }
+      if (!state_updated) {
+        const decompressed_state = localStorage.getItem(STORAGE_KEY);
+        let new_state = null;
+        try {
+          new_state = JSON.parse(decompressed_state);
+        } catch {
+        }
+        if (new_state) {
+          state_updated = update_state(new_state);
+        }
+        if (state_updated)
+          state_updated_str = "State loaded from localStorage";
+      }
+      console.log(state_updated);
+    }
+
+    update_components();
+    if (state_updated_str)
+      statusLine.textContent = state_updated_str;
+  });
+</script>
+
+</body>
+</html>
