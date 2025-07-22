@@ -70,13 +70,6 @@ body {
   margin-right: 20px;
 }
 
-/* Output column */
-.col_output {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Style the labels to look like buttons */
 label.option-label {
   display: inline-block;
@@ -166,6 +159,7 @@ input[type="radio"]:checked + label.option-label {
 
 /* Output column styling */
 .col_output {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
