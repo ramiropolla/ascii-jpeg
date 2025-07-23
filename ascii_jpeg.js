@@ -558,3 +558,14 @@ function generateJPEG(width, height, components, ascii_data)
   // Return the generated JPEG data
   return jpeg_file.generate();
 }
+
+// Export for Node.js
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = {
+    generateJPEG,
+    image_size_values,
+    pixfmt_values,
+    dht_values,
+    preset_values,
+  };
+}
