@@ -18,17 +18,12 @@ done
 set -e
 set -x
 
-# MKV_PATH="${ASCII_JPEG_DIR}/ascii_jpeg.mkv"
-# ffmpeg -r 10 -i "${ASCII_JPEG_DIR}/ascii_%4d.png" -pix_fmt yuv444p -y ${MKV_PATH}
-# echo ${MKV_PATH}
-#
-# MKV_PATH="${ASCII_JPEG_DIR}/jpeg_txt.mkv"
-# ffmpeg -r 10 -i "${ASCII_JPEG_DIR}/jpeg_%4d.png" -pix_fmt yuv444p -y ${MKV_PATH}
-# echo ${MKV_PATH}
-
-MKV_PATH="${ASCII_JPEG_DIR}/ascii_jpeg.mkv"
+MP4_PATH="${ASCII_JPEG_DIR}/ascii_jpeg.mp4"
 ffmpeg -r 10 -i "${ASCII_JPEG_DIR}/ascii_%4d.png" \
        -r 10 -i "${ASCII_JPEG_DIR}/jpeg_%4d.png" \
        -filter_complex "[0:v]format=rgb24[a];[1:v]format=rgb24[b];[a][b]vstack=inputs=2" \
-       -pix_fmt yuv444p -y ${MKV_PATH}
-echo ${MKV_PATH}
+       -c:v libx264 -profile:v high -level:v 4.0 \
+       -preset slow -crf 23 \
+       -movflags +faststart \
+       -pix_fmt yuv420p -y ${MP4_PATH}
+echo ${MP4_PATH}
