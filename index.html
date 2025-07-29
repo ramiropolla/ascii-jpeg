@@ -221,7 +221,9 @@
       let dc_huff_options = "";
       let ac_huff_options = "";
       for (const name in dht_values) {
-        dc_huff_options += `<option value="${name}"${name === default_dc_dht ? " selected" : ""}>${name}</option>`;
+        /* Make sure there is no run in DC tables */
+        if (!name.includes("run"))
+          dc_huff_options += `<option value="${name}"${name === default_dc_dht ? " selected" : ""}>${name}</option>`;
         ac_huff_options += `<option value="${name}"${name === default_ac_dht ? " selected" : ""}>${name}</option>`;
       }
       html += "    <tr>";
