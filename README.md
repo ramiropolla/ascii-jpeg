@@ -201,13 +201,13 @@ Both `libjpeg-turbo` and `FFmpeg` will happily decode the image up to the last b
 
 Both `libjpeg-turbo` and `FFmpeg` will happily decode the image up to the last coefficient necessary to complete the full image, and ignore the remaining data as garbage.
 
-### EOF marker
+### EOI marker
 
-While theoretically JPEG requires an `EOF` (End of Image) marker to determine where the file ends,
+While theoretically JPEG requires an `EOI` (End of Image) marker to determine where the file ends,
 the vast majority of JPEG decoders will be fine if that marker is not present, or even if there is
 a lot of garbage after the last decoded DCT coefficient.
 
-`ascii.jpeg` does include an `EOF` marker at the end, but it probably doesn't need to.
+`ascii.jpeg` does include an `EOI` marker at the end, but it probably doesn't need to.
 
 ### All-one Huffman codes
 
